@@ -7,6 +7,10 @@ opcodes = {
     2: 3, # multiply
     3: 1, # input
     4: 1, # output
+    5: 2, # jump if true
+    6: 2, # jump if false
+    7: 3, # less than
+    8: 3, # equals
 }
 
 def get_mode(opcode, p):
@@ -19,7 +23,7 @@ assert(get_mode(1002, 2) == 0)
 def compute(memory):
     ip = 0
     input = Queue()
-    input.put(1)
+    input.put(5)
     while True:
         raw = memory[ip]
         opcode = raw % 100
@@ -32,6 +36,7 @@ def compute(memory):
             mode = get_mode(raw, i)
             values.append(memory[memory[ip + i]] if mode == 0 else memory[ip + i])
             pointers.append(memory[ip + i])
+        ip += opcodes[opcode]
 
         if opcode == 1:
             memory[pointers[2]] = values[0] + values[1]
@@ -41,7 +46,16 @@ def compute(memory):
             memory[pointers[0]] = input.get()
         elif opcode == 4:
             print(values[0])
-        ip += opcodes[opcode]
+        elif opcode == 5:
+            if values[0] != 0:
+                ip = values[1]
+        elif opcode == 6:
+            if values[0] == 0:
+                ip = values[1]
+        elif opcode == 7:
+            memory[pointers[2]] = 1 if values[0] < values[1] else 0
+        elif opcode == 8:
+            memory[pointers[2]] = 1 if values[0] == values[1] else 0
     return memory
 
 assert(compute([1002,4,3,4,33]) == [1002,4,3,4,99])
