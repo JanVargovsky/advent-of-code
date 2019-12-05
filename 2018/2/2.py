@@ -1,29 +1,15 @@
-def checksum(lines):
-    twos = 0
-    threes = 0
-    for l in lines:
-        counts = {}
-        for c in l:
-            if c not in counts:
-                counts[c] = 1
-            else:
-                counts[c] += 1
-        two = False
-        three = False
-        for k, v in counts.items():
-            if v == 2:
-                two = True
-            elif v == 3:
-                three = True
-        if two:
-            twos += 1
-        if three:
-            threes += 1
-    return twos * threes
+def diff(a, b):
+    return list(filter(lambda i: a[i] != b[i], range(len(a))))
 
-assert(checksum(["abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab"]) == 12)
+
+assert(diff("abcde", "axcye") == [1, 3])
+assert(diff("fghij", "fguij") == [2])
 
 with open('input.txt') as f:
     lines = f.readlines()
 
-print(checksum(lines))
+for i in range(len(lines)):
+    for j in range(i + 1, len(lines)):
+        d = diff(lines[i], lines[j])
+        if len(d) == 1:
+            print(lines[i][:d[0]] + lines[i][d[0]+1:])
