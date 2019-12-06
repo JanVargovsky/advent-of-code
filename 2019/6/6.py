@@ -1,16 +1,19 @@
-def distance(graph, orbit):
-    c = 0
+def path(graph, orbit):
+    c = []
     while orbit in graph:
         orbit = graph[orbit]
-        c += 1
+        c.append(orbit)
     return c
 
 
 def solve(graph):
-    c = 0
-    for orbit in graph.keys():
-        c += distance(graph, orbit)
-    return c
+    you = path(graph, "YOU")
+    san = path(graph, "SAN")
+
+    while you[-1] == san[-1]:
+        you.pop(-1)
+        san.pop(-1)
+    return len(you) + len(san)
 
 
 def load(lines):
@@ -18,18 +21,6 @@ def load(lines):
     g = {o2: o1 for o1, o2 in orbits}
     return g
 
-
-assert(distance(load(["COM)B",
-                      "B)C",
-                      "C)D",
-                      "D)E",
-                      "E)F",
-                      "B)G",
-                      "G)H",
-                      "D)I",
-                      "E)J",
-                      "J)K",
-                      "K)L"]), "L") == 7)
 
 assert(solve(load(["COM)B",
                    "B)C",
@@ -41,7 +32,9 @@ assert(solve(load(["COM)B",
                    "D)I",
                    "E)J",
                    "J)K",
-                   "K)L"])) == 42)
+                   "K)L",
+                   "K)YOU",
+                   "I)SAN"])) == 4)
 
 
 with open('input.txt') as f:
