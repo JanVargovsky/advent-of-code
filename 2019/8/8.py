@@ -3,26 +3,30 @@ tall = 6
 size = wide * tall
 
 
-def parse(input):
+def parse(input, size=size):
     return [input[(size*i):(size*(i+1))]
             for i in range(len(input) // size)]
 
 
-def solve(layers):
-    m = None
-    mi = None
-    for i, layer in enumerate(layers):
-        c = layer.count("0")
-        print(i, c)
-        if m is None or c < m:
-            m = c
-            mi = i
+def solve(layers, size=size):
+    image = list("2" * size)
 
-    return layers[mi].count("1") * layers[mi].count("2")
+    for layer in layers:
+        for i, pixel in enumerate(layer):
+            if image[i] == '2':
+                image[i] = pixel
+
+    return "".join(image)
+
+
+assert(solve(parse("0222112222120000", 2*2), 2*2) == "0110")
 
 
 with open("input.txt") as f:
     raw = f.readline().rstrip()
 
 layers = parse(raw)
-print(solve(layers))
+decoded = solve(layers)
+
+for i in range(tall):
+    print(decoded[wide * i:(wide * (i+1))].replace("1", ".").replace("0", " "))
