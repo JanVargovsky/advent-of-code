@@ -81,5 +81,5 @@ with open('input.txt') as f:
     program = [int(i) for i in f.readline().split(',')]
 
 input = Queue()
-input.put(1)
+input.put(2)
 print(list(run(program, input)))
