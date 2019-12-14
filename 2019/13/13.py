@@ -1,5 +1,4 @@
-from queue import Queue
-import itertools
+import numpy as np
 
 opcodes = {
     # Opcode: arity
@@ -89,12 +88,48 @@ BLOCK = 2
 PADDLE = 3
 BALL = 4
 
+JOYSTICK_NEUTRAL = 0
+JOYSTICK_LEFT = -1
+JOYSTICK_RIGHT = 1
 
+program[0] = 2
 game = {}
-output = run(program, None)
+score = 0
+
+
+def print_game():
+    print(f"score={score}")
+    for y in range(0, 24):
+        for x in range(0, 42):
+            id = game[(x, y)]
+            symbol = " "
+            if id == WALL:
+                symbol = "█"
+            elif id == BLOCK:
+                symbol = "■"
+            elif id == PADDLE:
+                symbol = "═"
+            elif id == BALL:
+                symbol = "•"
+            print(symbol, end='')
+        print()
+
+
+def get_input():
+    # print_game()
+    ball = next(x for (x, _), id in game.items() if id == BALL)
+    paddle = next(x for (x, _), id in game.items() if id == PADDLE)
+    return np.sign(ball - paddle)
+
+
+output = run(program, get_input)
 for x in output:
     y = next(output)
     id = next(output)
-    game[(x, y)] = id
+    if x == -1 and y == 0:
+        score = id
+    else:
+        game[(x, y)] = id
 
-print(list(game.values()).count(BLOCK))
+
+print(score)
