@@ -1,6 +1,5 @@
-from queue import Queue
 from collections import namedtuple
-from math import sqrt, atan2
+from math import sqrt, atan2, degrees
 
 Point = namedtuple("Point", ["x", "y"])
 
@@ -34,13 +33,17 @@ def detect(map, x, y):
     return len(visited)
 
 
-def solve(map):
-    best = 0
-    for x in range(len(map)):
+def find_location(map):
+    best = -1
+    p = None
+    for x in range(len(map[0])):
         for y in range(len(map)):
             if map[y][x] != '.':
-                best = max(best, detect(map, x, y))
-    return best
+                a = detect(map, x, y)
+                if a > best:
+                    best = a
+                    p = Point(x, y)
+    return p
 
 
 assert(detect([".#..#",
@@ -55,13 +58,53 @@ assert(detect([".#..#",
                "....#",
                "...##"], 3, 4) == 8)
 
-assert(solve([".#..#",
-              ".....",
-              "#####",
-              "....#",
-              "...##"]) == 8)
+assert(find_location([".#..#",
+                      ".....",
+                      "#####",
+                      "....#",
+                      "...##"]) == Point(3, 4))
+
+
+AsteroidPoint = namedtuple("AsteroidPoint", ["x", "y", "angle", "distance"])
+
+
+def solve(map, p):
+    asteroids = []
+    for y in range(len(map)):
+        for x in range(len(map[0])):
+            if p.x == x and p.y == y:
+                continue
+            if map[y][x] != '.':
+                angle = degrees(atan2(p.y - y, p.x - x)) - 90
+                angle = (angle + 360) % 360
+                distance = sqrt((x - p.x) ** 2 + (y - p.y) ** 2)
+                asteroids.append(AsteroidPoint(x, y, angle, distance))
+
+    asteroids.sort(key=lambda a: (a.angle, a.distance))
+
+    angle = asteroids[0].angle - 0.0001
+    i = 0
+    while len(asteroids) > 0:
+        while i < len(asteroids) and asteroids[i].angle == angle:
+            i += 1
+
+        if not i < len(asteroids):
+            angle = asteroids[0].angle - 0.0001
+            i = 0
+
+        a = asteroids.pop(i)
+        # print(map[a.y][a.x], a)
+        yield a
+        angle = a.angle
+
+        if a.angle >= 360:
+            angle = asteroids[0].angle - 0.0001
+            i = 0
+
 
 with open('input.txt') as f:
     map = [line.rstrip() for line in f.readlines()]
 
-print(solve(map))
+p = find_location(map)
+asteroids = list(solve(map, p))
+print(asteroids[199].x * 100 + asteroids[199].y)
