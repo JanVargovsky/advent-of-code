@@ -2,7 +2,8 @@ from collections import namedtuple
 import re
 from itertools import combinations
 from recordclass import recordclass
-from numpy import sign
+import numpy as np
+from copy import deepcopy
 
 Coord3 = recordclass("Coord3", ["x", "y", "z"])
 Moon = namedtuple("Moon", ["pos", "vel"])
@@ -20,7 +21,7 @@ assert(parse("<x=2, y=-10, z=-7>") == Coord3(2, -10, -7))
 def apply_gravity(moons):
     for m1, m2 in combinations(moons, 2):
         for i in range(len(m1.pos)):
-            delta = sign(m2.pos[i] - m1.pos[i])
+            delta = np.sign(m2.pos[i] - m1.pos[i])
             m1.vel[i] += delta
             m2.vel[i] -= delta
 
@@ -35,13 +36,26 @@ def moon_energy(moon):
 def total_energy(moons):
     return sum(map(moon_energy, moons))
 
+def check(initial, current, i):
+    for m1, m2 in zip(initial, current):
+        if m1.pos[i] != m2.pos[i] or m1.vel[i] != m2.vel[i]:
+            return False
+    return True
 
 with open('input.txt') as f:
     moons = [Moon(parse(line), Coord3(0, 0, 0)) for line in f.readlines()]
 
-print(*moons, sep="\n")
-for _ in range(1000):
+initial_moons = deepcopy(moons)
+
+step = 1
+repeats = [None, None, None]
+while None in repeats:
     apply_gravity(moons)
     apply_velocity(moons)
-print(*moons, sep="\n")
-print(total_energy(moons))
+    for i in range(len(repeats)):
+        if repeats[i] is None and check(initial_moons, moons, i):
+            repeats[i] = step
+    step += 1
+
+print(repeats)
+print(np.lcm.reduce(np.array(repeats, dtype=np.int64)))
