@@ -91,7 +91,7 @@ DIRECTIONS = [
 BLACK = 0
 WHITE = 1
 
-panel = {}
+panel = {(0, 0): WHITE}
 direction = 1
 x = 0
 y = 0
@@ -99,6 +99,16 @@ y = 0
 
 def get_input():
     return panel[(x, y)] if (x, y) in panel else BLACK
+
+
+def print_panel(panel):
+    for y in range(0, 6):
+        for x in range(1, 40):
+            if not (x, y) in panel:
+                print(".", end='')
+            else:
+                print("." if panel[(x, y)] == BLACK else "#", end='')
+        print()
 
 
 output = run(program, get_input)
@@ -110,4 +120,4 @@ for color in output:
     x += DIRECTIONS[direction][0]
     y += DIRECTIONS[direction][1]
 
-print(len(panel))
+print_panel(panel)
