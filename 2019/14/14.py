@@ -23,8 +23,8 @@ with open('input.txt') as f:
         reactions[r.output.name] = r
 
 
-def solve(reactions):
-    needs = [Chemical(1, "FUEL")]
+def solve(reactions, count):
+    needs = [Chemical(count, "FUEL")]
     waste = {name: 0 for name in reactions.keys()}
     ore = 0
 
@@ -54,6 +54,22 @@ def solve(reactions):
 
     return ore
 
+def max_fuel(reactions, max_ore):
+    left = 0
+    right = max_ore
+
+    while left <= right:
+        mid = (left + right) // 2
+        ore = solve(reactions, mid)
+        # print(ore)
+        if ore < max_ore:
+            left = mid + 1
+        elif ore > max_ore:
+            right = mid - 1
+        else:
+            return mid
+    return (left + right) // 2
+
 
 # print(*reactions, sep="\n")
-print(solve(reactions))
+print(max_fuel(reactions, 1000000000000))
