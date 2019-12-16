@@ -149,11 +149,11 @@ def opposite_movement(movement):
         return WEST
 
 
-def solve(program):
+def search(program):
     q = Queue()
     x = 0
     y = 0
-    map = {}
+    map = {(x, y): EMPTY}
     movements = []
     movements.append((SOUTH, False))
     movements.append((NORTH, False))
@@ -165,40 +165,32 @@ def solve(program):
     min_y = -1
     max_x = 1
     max_y = 1
-    i = 0
-    l = 0
-    while len(movements) > 0:
+    while movements:
         min_x = min(x, min_x)
         max_x = max(x, max_x)
         min_y = min(y, min_y)
         max_y = max(y, max_y)
-        i += 1
-        print(i, l)
         # print_map(map, x, y, min_x, max_x, min_y, max_y)
+        
         movement, backtrack = movements.pop()
-
-        if not backtrack and new_position(movement, x, y) in map:
+        xy = new_position(movement, x, y)
+        if not backtrack and xy in map:
             continue
 
         # print(f"moving {DIRECTION_NAMES[movement]}")
         q.put(movement)
         output = next(droid)
-        map[(x, y)] = EMPTY
-        if output == OXYGEN:
-            print_map(map, x, y, min_x, max_x, min_y, max_y)
-            return l + 1
-        elif output == WALL:
+        if output == WALL:
             # print("wall")
-            map[new_position(movement, x, y)] = WALL
-        elif output == EMPTY:
-            x, y = new_position(movement, x, y)
+            map[xy] = WALL
+        elif output == EMPTY or output == OXYGEN:
+            x, y = xy
             op = opposite_movement(movement)
 
             if backtrack:
-                l -= 1
                 continue
-            else:
-                l += 1
+
+            map[(x, y)] = output
             # print(f"moved {DIRECTION_NAMES[movement]}")
 
             movements.append((op, True))  # backtrack
@@ -207,5 +199,31 @@ def solve(program):
             movements.append((WEST, False))
             movements.append((EAST, False))
 
+    print_map(map, x, y, min_x, max_x, min_y, max_y)
+    return map
 
-print(solve(program))
+
+def fill_oxygen(map):
+    oxygen = next(k for k, v in map.items() if v == OXYGEN)
+    minutes = 0
+    visited = set()
+    q = []
+    q.append((oxygen, 0))
+
+    while q:
+        (x, y), m = q.pop()
+        if (x, y) not in map or (x, y) in visited:
+            continue
+
+        visited.add((x, y))
+        if map[(x, y)] == EMPTY or map[(x, y)] == OXYGEN:
+            minutes = max(minutes, m)
+
+            for movement in [NORTH, SOUTH, WEST, EAST]:
+                q.append((new_position(movement, x, y), m + 1))
+
+    return minutes
+
+
+map = search(program)
+print(fill_oxygen(map))
