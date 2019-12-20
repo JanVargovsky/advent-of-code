@@ -1,5 +1,3 @@
-from queue import Queue
-
 opcodes = {
     # Opcode: arity
     99: 0,  # halt
@@ -82,13 +80,19 @@ with open('input.txt') as f:
     program = [int(i) for i in f.readline().split(',')]
 
 
-m = {}
-for x in range(50):
-    for y in range(50):
-        input = Queue()
-        intcode = run(program.copy(), input.get)
-        input.put(x)
-        input.put(y)
-        m[(x, y)] = next(intcode)
+def is_beam(x, y):
+    input = [y, x]
+    intcode = run(program.copy(), input.pop)
+    return next(intcode)
 
-print(sum(m.values()))
+
+x = 99
+y = 0
+while True:
+    x += 1
+    while not is_beam(x, y):
+        y += 1
+    if is_beam(x - 99, y) and is_beam(x - 99, y + 99):
+        break
+
+print((x - 99) * 10000 + y)
