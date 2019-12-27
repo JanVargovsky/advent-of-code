@@ -99,43 +99,46 @@ def find_portals(m):
     portals["AA"] = outer["AA"]
     portals["ZZ"] = outer["ZZ"]
 
-    return portals
+    return portals, inner, outer
 
 
 def solve(m):
-    p = find_portals(m)
+    p, inner_names, outer_names = find_portals(m)
+    inner = set(inner_names.values())
     start = p["AA"]
     end = p["ZZ"]
 
     distances = defaultdict(lambda: 1e10)
-    distances[start] = 0
-    s = [[start]]
+    distances[(start, 0)] = 0
+    q = Queue()
+    q.put(([start], 0))
     directions = (Int2(1, 0), Int2(0, 1), Int2(-1, 0), Int2(0, -1))
 
-    while s:
-        *path, current = s.pop()
+    while not q.empty():
+        (*path, current), level = q.get_nowait()
+        if current == end and level == 0:
+            return distances[(end, 0)]
 
         if current in p and path[-1] != p[current]:
             new = p[current]
-            if len(path) + 1 >= distances[new]:
+            new_level = level + (1 if current in inner else -1)
+            if new_level < 0 or new_level >= 30 or len(path) + 1 >= distances[(new, new_level)]:
                 continue
-            distances[new] = len(path) + 1
-            s.append(path + [current, new])
+
+            distances[(new, new_level)] = len(path) + 1
+            q.put((path + [current, new], new_level))
         else:
             for direction in directions:
                 new = Int2(current.x + direction.x, current.y + direction.y)
                 if m[new.y][new.x] != ".":
                     continue
-                if len(path) + 1 >= distances[new]:
+                if len(path) + 1 >= distances[(new, level)]:
                     continue
-                distances[new] = len(path) + 1
-                s.append(path + [current, new])
+                distances[(new, level)] = len(path) + 1
+                q.put((path + [current, new], level))
 
-    return distances[end]
+    return distances[(end, 0)]
 
-
-with open('input.txt') as f:
-    maze = [line.rstrip("\n") for line in f.readlines()]
 
 assert(solve("""         A           
          A           
@@ -155,43 +158,47 @@ DE..#######...###.#
 FG..#########.....#  
   ###########.#####  
              Z       
-             Z       """.splitlines()) == 23)
-assert(solve("""                   A               
-                   A               
-  #################.#############  
-  #.#...#...................#.#.#  
-  #.#.#.###.###.###.#########.#.#  
-  #.#.#.......#...#.....#.#.#...#  
-  #.#########.###.#####.#.#.###.#  
-  #.............#.#.....#.......#  
-  ###.###########.###.#####.#.#.#  
-  #.....#        A   C    #.#.#.#  
-  #######        S   P    #####.#  
-  #.#...#                 #......VT
-  #.#.#.#                 #.#####  
-  #...#.#               YN....#.#  
-  #.###.#                 #####.#  
-DI....#.#                 #.....#  
-  #####.#                 #.###.#  
-ZZ......#               QG....#..AS
-  ###.###                 #######  
-JO..#.#.#                 #.....#  
-  #.#.#.#                 ###.#.#  
-  #...#..DI             BU....#..LF
-  #####.#                 #.#####  
-YN......#               VT..#....QG
-  #.###.#                 #.###.#  
-  #.#...#                 #.....#  
-  ###.###    J L     J    #.#.###  
-  #.....#    O F     P    #.#...#  
-  #.###.#####.#.#####.#####.###.#  
-  #...#.#.#...#.....#.....#.#...#  
-  #.#####.###.###.#.#.#########.#  
-  #...#.#.....#...#.#.#.#.....#.#  
-  #.###.#####.###.###.#.#.#######  
-  #.#.........#...#.............#  
-  #########.###.###.#############  
-           B   J   C               
-           U   P   P               """.splitlines()) == 58)
+             Z       """.splitlines()) == 26)
+assert(solve("""             Z L X W       C                 
+             Z P Q B       K                 
+  ###########.#.#.#.#######.###############  
+  #...#.......#.#.......#.#.......#.#.#...#  
+  ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###  
+  #.#...#.#.#...#.#.#...#...#...#.#.......#  
+  #.###.#######.###.###.#.###.###.#.#######  
+  #...#.......#.#...#...#.............#...#  
+  #.#########.#######.#.#######.#######.###  
+  #...#.#    F       R I       Z    #.#.#.#  
+  #.###.#    D       E C       H    #.#.#.#  
+  #.#...#                           #...#.#  
+  #.###.#                           #.###.#  
+  #.#....OA                       WB..#.#..ZH
+  #.###.#                           #.#.#.#  
+CJ......#                           #.....#  
+  #######                           #######  
+  #.#....CK                         #......IC
+  #.###.#                           #.###.#  
+  #.....#                           #...#.#  
+  ###.###                           #.#.#.#  
+XF....#.#                         RF..#.#.#  
+  #####.#                           #######  
+  #......CJ                       NM..#...#  
+  ###.#.#                           #.###.#  
+RE....#.#                           #......RF
+  ###.###        X   X       L      #.#.#.#  
+  #.....#        F   Q       P      #.#.#.#  
+  ###.###########.###.#######.#########.###  
+  #.....#...#.....#.......#...#.....#.#...#  
+  #####.#.###.#######.#######.###.###.#.#.#  
+  #.......#.......#.#.#.#.#...#...#...#.#.#  
+  #####.###.#####.#.#.#.#.###.###.#.###.###  
+  #.......#.....#.#...#...............#...#  
+  #############.#.#.###.###################  
+               A O F   N                     
+               A A D   M                     """.splitlines()) == 396)
+
+
+with open('input.txt') as f:
+    maze = [line.rstrip("\n") for line in f.readlines()]
 
 print(solve(maze))
