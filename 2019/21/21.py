@@ -105,11 +105,20 @@ with open('input.txt') as f:
     program = [int(i) for i in f.readline().split(',')]
 
 input = Queue()
-send("NOT A J")
-send("NOT C T")
-send("AND D T")
+send("NOT A T")
+send("NOT B J")
 send("OR T J")
-send("WALK")
+send("NOT C T")
+send("OR T J")  # 'A or 'B or 'C
+
+send("NOT E T")
+send("NOT T T")
+send("OR H T")  # E or H
+
+send("AND T J")
+send("AND D J")  # D
+
+send("RUN")
 *output, damage = run(program, input.get)
 print("".join((map(chr, output))))
 if damage > 127:
