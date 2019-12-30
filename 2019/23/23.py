@@ -103,9 +103,10 @@ def send(destination, packet):
 
 def receive(address):
     global inputs
-    print(f"{address} is receiving")
     q = inputs[address]
-    data = -1 if q.empty() else q.get()
+    if q.empty():
+        return -1
+    data = q.get()
     print(f"{address} received {data}")
     return data
 
@@ -120,19 +121,33 @@ def initialize_nic(address, nic):
 N = 50
 inputs = []
 nics = []
+empty = []
 for i in range(N):
     input, nic = initialize_nic(i, program.copy())
     inputs.append(input)
     nics.append(nic)
+    empty.append(False)
 
-solved = False
-while not solved:
-    for nic in nics:
+nat = (None, None)
+last_nat_y = None
+
+while True:
+    for i, nic in enumerate(nics):
         destination = next(nic, -1)
         if destination != -1:
+            empty[i] = False
             x, y = next(nic), next(nic)
             if destination == 255:
-                print(y)
-                solved = True
-                break
-            send(destination, [x, y])
+                nat = (x, y)
+            else:
+                send(destination, [x, y])
+        else:
+            empty[i] = True
+    
+    idle = all(empty)
+    if idle:
+        if nat[1] == last_nat_y:
+            print(y)
+            break
+        last_nat_y = nat[1]
+        send(0, nat)
