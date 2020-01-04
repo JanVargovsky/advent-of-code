@@ -33,15 +33,31 @@ assert(do_increment([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3)
        == [0, 7, 4, 1, 8, 5, 2, 9, 6, 3])
 
 
-cards = list(range(10007))
+cards = 119315717514047
+offset, increment = 0, 1
 with open('input.txt') as f:
     for l in f.readlines():
         if l.startswith("deal into"):
-            cards = do_stack(cards)
+            increment *= -1
+            offset += increment
+            offset %= cards
         elif l.startswith("cut "):
-            cards = do_cut(cards, int(l[len("cut "):]))
+            n = int(l[len("cut "):])
+            offset += increment * n
+            offset %= cards
         elif l.startswith("deal with increment "):
-            cards = do_increment(cards, int(l[len("deal with increment "):]))
+            n = int(l[len("deal with increment "):])
+            increment *= pow(n, cards - 2, cards)
+            increment %= cards
 
-print("Result: ", " ".join(map(str, cards)))
-print(cards.index(2019))
+n = 101741582076661
+increment2 = pow(increment, n, cards)
+offset2 = offset * (1 - increment2) * \
+    pow((1 - increment) % cards, cards - 2, cards)
+offset2 %= cards
+
+card = 2020
+card_index = offset2 + card * increment2
+card_index %= cards
+
+print(card_index)
