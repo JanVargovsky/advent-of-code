@@ -10,14 +10,10 @@ namespace AdventOfCode.Year2020.Day01
             var array = input.Split(Environment.NewLine).Select(int.Parse).ToArray();
 
             foreach (var item1 in array)
-            {
                 foreach (var item2 in array)
-                {
-                    if (item1 + item2 == 2020)
-                        return (item1 * item2).ToString();
-                }
-            }
-
+                    foreach (var item3 in array)
+                        if (item1 + item2 + item3 == 2020)
+                            return (item1 * item2 * item3).ToString();
 
             throw new NotImplementedException();
         }
