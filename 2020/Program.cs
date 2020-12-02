@@ -7,7 +7,7 @@ var solver = new Solver();
 
 Debug.Assert(solver.Solve(@"1-3 a: abcde
 1-3 b: cdefg
-2-9 c: ccccccccc") == "2");
+2-9 c: ccccccccc") == "1");
 
 var day = "Day02";
 var path = Path.Combine(day, "input.txt");

@@ -21,8 +21,7 @@ namespace AdventOfCode.Year2020.Day02
 
             return passwords.Count(p =>
             {
-                var c = p.Password.Count(c => c == p.Character);
-                return c >= p.From && c <= p.To;
+                return p.Password[p.From - 1] == p.Character ^ p.Password[p.To - 1] == p.Character;
             }).ToString();
         }
 
