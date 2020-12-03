@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace AdventOfCode.Year2020.Day03
 {
@@ -7,23 +6,28 @@ namespace AdventOfCode.Year2020.Day03
     {
         public string Solve(string input)
         {
-            var array = input.Split(Environment.NewLine)
-                .ToArray();
+            var array = input.Split(Environment.NewLine);
 
-            var right = 3;
-            var down = 1;
-            var trees = 0;
-
-            while (down < array.Length)
+            var slopes = new[] { (1, 1), (3, 1), (5, 1), (7, 1), (1, 2) };
+            var result = 1ul;
+            foreach (var (rightSlope, downSlope) in slopes)
             {
-                trees += array[down][right] == '#' ? 1 : 0;
+                var right = rightSlope;
+                var down = downSlope;
+                var trees = 0ul;
+                while (down < array.Length)
+                {
+                    trees += array[down][right] == '#' ? 1ul : 0ul;
 
-                right += 3;
-                right %= array[0].Length;
-                down += 1;
+                    right += rightSlope;
+                    right %= array[0].Length;
+                    down += downSlope;
+                }
+
+                result *= trees;
             }
 
-            return trees.ToString();
+            return result.ToString();
         }
     }
 }
