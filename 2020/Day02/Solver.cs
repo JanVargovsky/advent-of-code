@@ -1,10 +1,18 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AdventOfCode.Year2020.Day02
 {
     class Solver
     {
+        public Solver()
+        {
+            Debug.Assert(Solve(@"1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc") == "1");
+        }
+
         public string Solve(string input)
         {
             var passwords = input.Split(Environment.NewLine)
