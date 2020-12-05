@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using TextCopy;
 
 var dayNumber = args.Length > 0 ? int.Parse(args[0]) : DateTime.UtcNow.Day;
 var day = $"Day{dayNumber:D2}";
@@ -10,7 +11,9 @@ var solverType = Assembly.GetExecutingAssembly().GetType($"AdventOfCode.Year2020
 dynamic solver = Activator.CreateInstance(solverType);
 
 var input = await GetOrDownloadInputAsync();
-Console.WriteLine(solver.Solve(input));
+var result = solver.Solve(input);
+Console.WriteLine(result);
+await ClipboardService.SetTextAsync(result);
 
 async Task<string> GetOrDownloadInputAsync()
 {
