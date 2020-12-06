@@ -22,7 +22,7 @@ a
 a
 a
 
-b") == "11");
+b") == "6");
         }
 
         public string Solve(string input)
@@ -31,8 +31,11 @@ b") == "11");
                 .Select(group => group.Split(Environment.NewLine))
                 .ToArray();
 
-            return answers.Sum(group => group.SelectMany(t => t.ToCharArray()).Distinct().Count())
-                .ToString();
+            return answers.Sum(group =>
+            {
+                var yesQuestions = group.SelectMany(t => t.ToCharArray()).ToHashSet();
+                return yesQuestions.Count(t => group.All(passenger => passenger.Contains(t)));
+            }).ToString();
         }
     }
 }
