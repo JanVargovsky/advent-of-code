@@ -27,7 +27,7 @@ namespace AdventOfCode.Year2020.Day09
 299
 277
 309
-576", 5) == "127");
+576", 5) == "62");
         }
 
         public string Solve(string input, int preambleLength = 25)
@@ -36,10 +36,24 @@ namespace AdventOfCode.Year2020.Day09
                 .Select(long.Parse)
                 .ToArray();
 
+            long invalidNumber = -1;
+
             for (int i = preambleLength; i < numbers.Length; i++)
             {
-                if(!IsValid(numbers[i], i))
-                    return numbers[i].ToString();
+                if (!IsValid(numbers[i], i))
+                {
+                    invalidNumber = numbers[i];
+                    break;
+                }
+            }
+
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                for (int j = i + 2; j < numbers.Length; j++)
+                {
+                    if (numbers[i..j].Sum() == invalidNumber)
+                        return (numbers[i..j].Min() + numbers[i..j].Max()).ToString();
+                }
             }
 
             throw new Exception();
