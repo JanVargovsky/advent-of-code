@@ -18,7 +18,7 @@ namespace AdventOfCode.Year2020.Day10
 19
 6
 12
-4") == "35");
+4") == "8");
 
             Debug.Assert(Solve(@"28
 33
@@ -50,7 +50,7 @@ namespace AdventOfCode.Year2020.Day10
 2
 34
 10
-3") == "220");
+3") == "19208");
         }
 
         public string Solve(string input)
@@ -60,29 +60,24 @@ namespace AdventOfCode.Year2020.Day10
                 .OrderBy(t => t)
                 .ToList();
 
-            if (data[0] != 0)
-                data.Insert(0, 0);
+            data.Insert(0, 0);
             data.Add(data[^1] + 3);
 
-            var diff1 = 0;
-            var diff3 = 0;
+            var counts = Enumerable.Repeat(0L, data.Count).ToList();
+            counts[0] = 1;
 
-            for (int i = 0; i < data.Count - 1; i++)
+            for (int i = 1; i < counts.Count; i++)
             {
-                var diff = data[i + 1] - data[i];
-
-                if (diff == 1)
+                for (int j = Math.Max(i - 3, 0); j < i; j++)
                 {
-                    diff1++;
-                }
-                else if (diff == 3)
-                {
-                    diff3++;
+                    if (data[i] - data[j] <= 3)
+                    {
+                        counts[i] += counts[j];
+                    }
                 }
             }
 
-
-            return (diff1 * diff3).ToString();
+            return counts[^1].ToString();
         }
     }
 }
