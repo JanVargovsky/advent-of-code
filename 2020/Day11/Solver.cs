@@ -18,7 +18,7 @@ L.LLLLL.LL
 ..L.L.....
 LLLLLLLLLL
 L.LLLLLL.L
-L.LLLLL.LL") == "37");
+L.LLLLL.LL") == "26");
         }
 
         public string Solve(string input)
@@ -45,7 +45,6 @@ L.LLLLL.LL") == "37");
                 var newSeats = seats.Select(t => t.ToArray()).ToArray();
                 gen++;
 
-
                 if (!Tick(seats, newSeats))
                     break;
                 seats = newSeats;
@@ -63,7 +62,7 @@ L.LLLLL.LL") == "37");
                     for (int y = 0; y < seats[0].Length; y++)
                     {
                         var adjacentSeats = positions
-                            .Select((t) => Get(seats, x + t.X, y + t.Y))
+                            .Select((t) => GetVisible(seats, x, y, t.X, t.Y))
                             .ToArray();
 
                         if (seats[x][y] == 'L' && adjacentSeats.Count(t => t == '#') == 0)
@@ -71,7 +70,7 @@ L.LLLLL.LL") == "37");
                             newSeats[x][y] = '#';
                             changed = true;
                         }
-                        else if (seats[x][y] == '#' && adjacentSeats.Count(t => t == '#') >= 4)
+                        else if (seats[x][y] == '#' && adjacentSeats.Count(t => t == '#') >= 5)
                         {
                             newSeats[x][y] = 'L';
                             changed = true;
@@ -79,6 +78,18 @@ L.LLLLL.LL") == "37");
                     }
                 }
                 return changed;
+            }
+
+            char? GetVisible(char[][] seats, int x, int y, int xi, int yi)
+            {
+                char? c = null;
+                do
+                {
+                    x += xi;
+                    y += yi;
+                    c = Get(seats, x, y);
+                } while (c != null && c == '.');
+                return c;
             }
 
             char? Get(char[][] seats, int x, int y)
