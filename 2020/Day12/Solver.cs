@@ -12,7 +12,7 @@ namespace AdventOfCode.Year2020.Day12
 N3
 F7
 R90
-F11") == "25");
+F11") == "286");
         }
 
         public string Solve(string input)
@@ -24,7 +24,8 @@ F11") == "25");
             //  N
             // W E
             //  S
-            var direction = 1; // NESW
+            var waypointEast = 10;
+            var waypointNorth = 1;
             var east = 0;
             var north = 0;
 
@@ -34,18 +35,27 @@ F11") == "25");
 
                 if (action == 'F')
                 {
-                    if (direction % 4 == 0) action = 'N';
-                    else if (direction % 4 == 1) action = 'E';
-                    else if (direction % 4 == 2) action = 'S';
-                    else if (direction % 4 == 3) action = 'W';
+                    east += waypointEast * value;
+                    north += waypointNorth * value;
                 }
 
-                if (action == 'N') north += value;
-                else if (action == 'S') north -= value;
-                else if (action == 'E') east += value;
-                else if (action == 'W') east -= value;
-                else if (action == 'L') direction -= (value / 90);
-                else if (action == 'R') direction += (value / 90);
+                if (action == 'N') waypointNorth += value;
+                else if (action == 'S') waypointNorth -= value;
+                else if (action == 'E') waypointEast += value;
+                else if (action == 'W') waypointEast -= value;
+                else if (action == 'L')
+                {
+                    while ((value -= 90) >= 0)
+                        (waypointEast, waypointNorth) = (-waypointNorth, waypointEast);
+                }
+                else if (action == 'R')
+                {
+                    // 10 units east and 4 units north
+                    // R90
+                    // 4 units east and 10 units south = 4 east and -10 north
+                    while ((value -= 90) >= 0)
+                        (waypointEast, waypointNorth) = (waypointNorth, -waypointEast);
+                }
 
                 Console.WriteLine($"east {east}, north {north}");
             }
