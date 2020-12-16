@@ -9,18 +9,17 @@ namespace AdventOfCode.Year2020.Day16
     {
         public Solver()
         {
-            Debug.Assert(Solve(@"class: 1-3 or 5-7
-row: 6-11 or 33-44
-seat: 13-40 or 45-50
+            Debug.Assert(Solve(@"class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
 
 your ticket:
-7,1,14
+11,12,13
 
 nearby tickets:
-7,3,47
-40,4,50
-55,2,20
-38,6,12") == "71");
+3,9,18
+15,1,5
+5,14,9") == "1");
         }
 
         public string Solve(string input)
@@ -32,7 +31,7 @@ nearby tickets:
             {
                 var tokens = item.Split(' ', '-');
                 fields.Add(new Field(
-                    tokens[0],
+                    item[..item.IndexOf(':')],
                     new FieldRange(int.Parse(tokens[^5]), int.Parse(tokens[^4])),
                     new FieldRange(int.Parse(tokens[^2]), int.Parse(tokens[^1]))
                     ));
@@ -48,19 +47,54 @@ nearby tickets:
                 .Select(t => t.Split(',').Select(int.Parse).ToArray())
                 .ToArray();
 
-            var result = nearbyTickets.Select(
-                ticket => GetInvalidFields(ticket).Sum()
-                ).Sum();
+            nearbyTickets = nearbyTickets.Where(IsValid).ToArray();
+
+            var possibleMatches = new HashSet<Field>[myTicket.Length];
+
+            for (int i = 0; i < possibleMatches.Length; i++)
+            {
+                possibleMatches[i] = fields.Where(field => nearbyTickets.All(ticket => field.IsValid(ticket[i]))).ToHashSet();
+            }
+
+            while (true)
+            {
+                bool removed = false;
+                for (int i = 0; i < possibleMatches.Length; i++)
+                {
+                    if (possibleMatches[i].Count == 1) // final position of field
+                    {
+                        var fieldToClear = possibleMatches[i].First();
+                        for (int j = 0; j < possibleMatches.Length; j++)
+                        {
+                            if (i == j) continue;
+                            if (possibleMatches[j].Remove(fieldToClear))
+                                removed = true;
+                        }
+                    }
+                }
+                if (!removed)
+                    break;
+            }
+
+            var result = 1L;
+            for (int i = 0; i < possibleMatches.Length; i++)
+            {
+                var field = possibleMatches[i].Single();
+                Console.WriteLine($"{field.Name} is {myTicket[i]}");
+                if (field.Name.StartsWith("departure"))
+                    result *= myTicket[i];
+            }
             return result.ToString();
 
-            IEnumerable<int> GetInvalidFields(int[] ticket)
+            bool IsValid(int[] ticket)
             {
                 foreach (var value in ticket)
                 {
                     if (fields.All(field =>
                             !field.Range1.IsValid(value) && !field.Range2.IsValid(value)))
-                        yield return value;
+                        return false;
                 }
+                return true;
             }
         }
 
@@ -68,6 +102,9 @@ nearby tickets:
         {
             public bool IsValid(int n) => From <= n && To >= n;
         }
-        record Field(string Name, FieldRange Range1, FieldRange Range2);
+        record Field(string Name, FieldRange Range1, FieldRange Range2)
+        {
+            public bool IsValid(int n) => Range1.IsValid(n) || Range2.IsValid(n);
+        }
     }
 }
