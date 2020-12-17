@@ -11,7 +11,7 @@ namespace AdventOfCode.Year2020.Day17
         {
             Debug.Assert(Solve(@".#.
 ..#
-###") == "112");
+###") == "848");
         }
 
         public string Solve(string input)
@@ -24,7 +24,7 @@ namespace AdventOfCode.Year2020.Day17
             {
                 for (int y = 0; y < data[0].Length; y++)
                 {
-                    grid[new(x - 1, y - 1, 0)] = data[x][y];
+                    grid[new(x - 1, y - 1, 0, 0)] = data[x][y];
                 }
             }
 
@@ -35,8 +35,11 @@ namespace AdventOfCode.Year2020.Day17
                 {
                     for (int z = -1; z <= 1; z++)
                     {
-                        if (x == 0 && y == 0 && z == 0) continue;
-                        neighborOffsets.Add(new(x, y, z));
+                        for (int w = -1; w <= 1; w++)
+                        {
+                            if (x == 0 && y == 0 && z == 0 && w == 0) continue;
+                            neighborOffsets.Add(new(x, y, z, w));
+                        }
                     }
                 }
             }
@@ -87,34 +90,34 @@ namespace AdventOfCode.Year2020.Day17
 
             void Print(int i)
             {
-                var z = grid.Keys.Min(t => t.Z);
-                var maxZ = grid.Keys.Max(t => t.Z);
+                //var z = grid.Keys.Min(t => t.Z);
+                //var maxZ = grid.Keys.Max(t => t.Z);
 
                 Console.WriteLine($"Cycle={i}");
 
-                while (z <= maxZ)
-                {
-                    Console.WriteLine($"z={z}");
-                    for (int x = -i - 1; x <= i + 1; x++)
-                    {
-                        for (int y = -i - 1; y <= i + 1; y++)
-                        {
-                            Console.Write(grid[new(x, y, z)]);
-                        }
+                //while (z <= maxZ)
+                //{
+                //    Console.WriteLine($"z={z}");
+                //    for (int x = -i - 1; x <= i + 1; x++)
+                //    {
+                //        for (int y = -i - 1; y <= i + 1; y++)
+                //        {
+                //            Console.Write(grid[new(x, y, z)]);
+                //        }
 
-                        Console.WriteLine();
-                    }
+                //        Console.WriteLine();
+                //    }
 
-                    Console.WriteLine();
-                    z++;
-                }
+                //    Console.WriteLine();
+                //    z++;
+                //}
             }
         }
 
-        record Point(int X, int Y, int Z)
+        record Point(int X, int Y, int Z, int W)
         {
             public static Point operator +(Point a, Point b) =>
-                new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+                new(a.X + b.X, a.Y + b.Y, a.Z + b.Z, a.W + b.W);
         }
     }
 }
