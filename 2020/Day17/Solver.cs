@@ -46,7 +46,8 @@ namespace AdventOfCode.Year2020.Day17
 
             for (int i = 0; i < 6; i++)
             {
-                Print(i);
+                Console.WriteLine($"Cycle={i}");
+                //Print(i);
                 Expand();
                 var newGrid = grid.ToDictionary(t => t.Key, t => t.Value);
 
@@ -90,27 +91,27 @@ namespace AdventOfCode.Year2020.Day17
 
             void Print(int i)
             {
-                //var z = grid.Keys.Min(t => t.Z);
-                //var maxZ = grid.Keys.Max(t => t.Z);
+                var minZ = grid.Keys.Min(t => t.Z);
+                var maxZ = grid.Keys.Max(t => t.Z);
+                var minW = grid.Keys.Min(t => t.Z);
+                var maxW = grid.Keys.Max(t => t.Z);
 
-                Console.WriteLine($"Cycle={i}");
+                for (int w = minW; w <= maxW; w++)
+                    for (int z = minZ; z <= maxZ; z++)
+                    {
+                        Console.WriteLine($"z={z}, w={w}");
+                        for (int x = -i - 1; x <= i + 1; x++)
+                        {
+                            for (int y = -i - 1; y <= i + 1; y++)
+                            {
+                                Console.Write(grid[new(x, y, z, w)]);
+                            }
 
-                //while (z <= maxZ)
-                //{
-                //    Console.WriteLine($"z={z}");
-                //    for (int x = -i - 1; x <= i + 1; x++)
-                //    {
-                //        for (int y = -i - 1; y <= i + 1; y++)
-                //        {
-                //            Console.Write(grid[new(x, y, z)]);
-                //        }
+                            Console.WriteLine();
+                        }
 
-                //        Console.WriteLine();
-                //    }
-
-                //    Console.WriteLine();
-                //    z++;
-                //}
+                        Console.WriteLine();
+                    }
             }
         }
 
