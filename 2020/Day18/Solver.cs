@@ -9,12 +9,12 @@ namespace AdventOfCode.Year2020.Day18
     {
         public Solver()
         {
-            Debug.Assert(Solve(@"1 + 2 * 3 + 4 * 5 + 6") == "71");
+            Debug.Assert(Solve(@"1 + 2 * 3 + 4 * 5 + 6") == "231");
             Debug.Assert(Solve(@"1 + (2 * 3) + (4 * (5 + 6))") == "51");
-            Debug.Assert(Solve(@"2 * 3 + (4 * 5)") == "26");
-            Debug.Assert(Solve(@"5 + (8 * 3 + 9 + 3 * 4 * 3)") == "437");
-            Debug.Assert(Solve(@"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))") == "12240");
-            Debug.Assert(Solve(@"((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2") == "13632");
+            Debug.Assert(Solve(@"2 * 3 + (4 * 5)") == "46");
+            Debug.Assert(Solve(@"5 + (8 * 3 + 9 + 3 * 4 * 3)") == "1445");
+            Debug.Assert(Solve(@"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))") == "669060");
+            Debug.Assert(Solve(@"((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2") == "23340");
         }
 
         public string Solve(string input)
@@ -57,13 +57,19 @@ namespace AdventOfCode.Year2020.Day18
             {
                 var tokens = expression.Replace("(", "( ").Replace(")", " )").Split(' ');
                 Queue<(string, TokenType)> postfix = new();
-                Stack<(string, TokenType)> stack = new();
+                Stack<(string Token, TokenType)> stack = new();
+                Dictionary<string, int> operatorPrecedences = new()
+                {
+                    ["*"] = 1,
+                    ["+"] = 2
+                };
 
                 foreach (var token in tokens)
                 {
                     if (token is ("+" or "*"))
                     {
-                        while (stack.Count > 0 && stack.Peek() is not (_, TokenType.LeftParenthesis))
+                        while (stack.Count > 0 && stack.Peek() is not (_, TokenType.LeftParenthesis) &&
+                            operatorPrecedences[stack.Peek().Token] >= operatorPrecedences[token])
                         {
                             postfix.Enqueue(stack.Pop());
                         }
