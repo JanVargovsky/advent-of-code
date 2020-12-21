@@ -12,7 +12,7 @@ namespace AdventOfCode.Year2020.Day21
             Debug.Assert(Solve(@"mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)
 sqjhc fvjkl (contains soy)
-sqjhc mxmxvkd sbzzf (contains fish)") == "5");
+sqjhc mxmxvkd sbzzf (contains fish)") == "mxmxvkd,sqjhc,fvjkl");
 
             // mxmxvkd = dairy
             // sqjhc = fish
@@ -69,7 +69,7 @@ sqjhc mxmxvkd sbzzf (contains fish)") == "5");
                 }
             }
 
-            var result = foods.Sum(t => t.Ingredients.Count);
+            var result = string.Join(",", ingredientToAllergen.OrderBy(t => t.Value).Select(t => t.Key));
             return result.ToString();
         }
 
