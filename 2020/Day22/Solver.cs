@@ -31,8 +31,7 @@ Player 2:
                 .ToArray();
             var player1 = decks[0];
             var player2 = decks[1];
-            bool isPlayer1Winner;
-            (player1, player2, isPlayer1Winner) = PlayRecursiveCombat(player1, player2);
+            var isPlayer1Winner = PlayRecursiveCombat(player1, player2);
 
             var winner = isPlayer1Winner ? player1 : player2;
             var result = 0L;
@@ -43,25 +42,25 @@ Player 2:
             return result.ToString();
         }
 
-        private static (Queue<int>, Queue<int>, bool) PlayRecursiveCombat(Queue<int> player1, Queue<int> player2)
+        private static bool PlayRecursiveCombat(Queue<int> player1, Queue<int> player2)
         {
             var prevs = new HashSet<(int, int)>();
 
             while (player1.Count > 0 && player2.Count > 0)
             {
-                if (!prevs.Add((QueueToHash(player1), QueueToHash(player2))))
+                if (!prevs.Add((GetHashCode(player1), GetHashCode(player2))))
                 {
-                    return (player1, player2, true);
+                    return true;
                 }
 
                 var play1 = player1.Dequeue();
                 var play2 = player2.Dequeue();
 
                 bool isPlayer1Winner;
-                // is subgame needed?
+                // is sub-game needed?
                 if (player1.Count >= play1 && player2.Count >= play2)
                 {
-                    (_, _, isPlayer1Winner) = PlayRecursiveCombat(
+                    isPlayer1Winner = PlayRecursiveCombat(
                         new Queue<int>(player1.Take(play1)),
                         new Queue<int>(player2.Take(play2)));
                 }
@@ -82,17 +81,9 @@ Player 2:
                 }
             }
 
-            return (player1, player2, player1.Count != 0);
+            return player1.Count > 0;
 
-            int QueueToHash(Queue<int> q)
-            {
-                int hash = q.Count;
-                foreach (var item in q)
-                {
-                    hash = HashCode.Combine(hash, item);
-                }
-                return hash;
-            }
+            int GetHashCode(IEnumerable<int> e) => e.Aggregate(HashCode.Combine);
         }
     }
 }
