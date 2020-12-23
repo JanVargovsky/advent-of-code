@@ -9,20 +9,33 @@ namespace AdventOfCode.Year2020.Day23
     {
         public Solver()
         {
-            Debug.Assert(Solve(@"389125467", 10) == "92658374");
-            Debug.Assert(Solve(@"389125467") == "67384529");
+            Debug.Assert(Solve(@"389125467") == "149245887792");
         }
 
-        public string Solve(string input, int moves = 100)
+        public string Solve(string input)
         {
-            var cups = new LinkedList<int>(input.Select(c => c - '0'));
+            var firstCups = input.Select(c => c - '0').ToArray();
+            var cups = new LinkedList<int>(
+                firstCups
+                .Concat(Enumerable.Range(firstCups.Max() + 1, 1_000_000 - firstCups.Length)));
 
             var currentCup = cups.First;
             var removedCups = new LinkedListNode<int>[3];
             var maxCup = cups.Max();
 
-            for (int move = 1; move <= moves; move++)
+            var current = cups.First;
+            var cupNodes = new Dictionary<int, LinkedListNode<int>>();
+            while (current != null)
             {
+                cupNodes[current.Value] = current;
+                current = current.Next;
+            }
+
+            for (int move = 1; move <= 10_000_000; move++)
+            {
+                if (move % 1_000_000 == 0)
+                    Console.WriteLine(move);
+
                 removedCups[0] = currentCup.Next ?? cups.First;
                 removedCups[1] = removedCups[0].Next ?? cups.First;
                 removedCups[2] = removedCups[1].Next ?? cups.First;
@@ -39,18 +52,18 @@ namespace AdventOfCode.Year2020.Day23
                     destinationCup--;
                 }
 
-                Console.WriteLine($"-- move {move} --");
-                Console.WriteLine("cups: " + string.Join("", cups.Select(c => c == currentCup.Value ? $"({c})" : $" {c} ")));
-                Console.WriteLine("pick up: " + string.Join(", ", removedCups.Select(c => c.Value)));
-                Console.WriteLine("destination: " + destinationCup);
-                Console.WriteLine();
+                //Console.WriteLine($"-- move {move} --");
+                //Console.WriteLine("cups: " + string.Join("", cups.Select(c => c == currentCup.Value ? $"({c})" : $" {c} ")));
+                //Console.WriteLine("pick up: " + string.Join(", ", removedCups.Select(c => c.Value)));
+                //Console.WriteLine("destination: " + destinationCup);
+                //Console.WriteLine();
 
                 foreach (var cupToRemove in removedCups)
                 {
                     cups.Remove(cupToRemove);
                 }
 
-                var destinationCupNode = cups.Find(destinationCup);
+                var destinationCupNode = cupNodes[destinationCup];
                 cups.AddAfter(destinationCupNode, removedCups[0]);
 
                 destinationCupNode = destinationCupNode.Next;
@@ -63,12 +76,8 @@ namespace AdventOfCode.Year2020.Day23
             }
 
             var first = cups.Find(1).Next ?? cups.First;
-            string result = null;
-            for (int i = 0; i < input.Length - 1; i++)
-            {
-                result += first.Value;
-                first = first.Next ?? cups.First;
-            }
+            var second = first.Next ?? cups.First;
+            var result = (long)first.Value * second.Value;
 
             return result.ToString();
         }
