@@ -72,9 +72,7 @@ wseweeenwnesenwwwswnew") == "2208");
                     current += directionOffsets[direction];
                 }
 
-                if (!grid.TryGetValue(current, out var tile))
-                    tile = Tile.White;
-
+                var tile = grid.GetValueOrDefault(current, Tile.White);
                 grid[current] = tile == Tile.White ? Tile.Black : Tile.White;
             }
 
@@ -92,9 +90,7 @@ wseweeenwnesenwwwswnew") == "2208");
                             black++;
                     }
 
-                    if (!grid.TryGetValue(hex, out var tile))
-                        tile = Tile.White;
-
+                    var tile = grid.GetValueOrDefault(hex, Tile.White);
                     if (tile == Tile.Black && black is 0 or > 2)
                         toFlip.Add(hex);
                     else if (tile == Tile.White && black is 2)
@@ -103,8 +99,7 @@ wseweeenwnesenwwwswnew") == "2208");
 
                 foreach (var hex in toFlip)
                 {
-                    if (!grid.TryGetValue(hex, out var tile))
-                        tile = Tile.White;
+                    var tile = grid.GetValueOrDefault(hex, Tile.White);
                     grid[hex] = tile == Tile.White ? Tile.Black : Tile.White;
                 }
 
