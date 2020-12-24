@@ -28,7 +28,7 @@ wnwnesenesenenwwnenwsewesewsesesew
 nenewswnwewswnenesenwnesewesw
 eneswnwswnwsenenwnwnwwseeswneewsenese
 neswnwewnwnwseenwseesewsenwsweewe
-wseweeenwnesenwwwswnew") == "10");
+wseweeenwnesenwwwswnew") == "2208");
         }
 
         public string Solve(string input)
@@ -76,6 +76,40 @@ wseweeenwnesenwwwswnew") == "10");
                     tile = Tile.White;
 
                 grid[current] = tile == Tile.White ? Tile.Black : Tile.White;
+            }
+
+            for (int day = 1; day <= 100; day++)
+            {
+                var hexToCheck = grid.Keys.SelectMany(p => directionOffsets.Values.Select(d => p + d).Append(p)).ToHashSet();
+                var toFlip = new List<Hex>();
+
+                foreach (var hex in hexToCheck)
+                {
+                    var black = 0;
+                    foreach (var direction in directionOffsets.Values)
+                    {
+                        if (grid.TryGetValue(hex + direction, out var t) && t == Tile.Black)
+                            black++;
+                    }
+
+                    if (!grid.TryGetValue(hex, out var tile))
+                        tile = Tile.White;
+
+                    if (tile == Tile.Black && black is 0 or > 2)
+                        toFlip.Add(hex);
+                    else if (tile == Tile.White && black is 2)
+                        toFlip.Add(hex);
+                }
+
+                foreach (var hex in toFlip)
+                {
+                    if (!grid.TryGetValue(hex, out var tile))
+                        tile = Tile.White;
+                    grid[hex] = tile == Tile.White ? Tile.Black : Tile.White;
+                }
+
+                if (day < 10 || day % 10 == 0)
+                    Console.WriteLine($"Day {day}: {grid.Values.Count(t => t == Tile.Black)}");
             }
 
             var result = grid.Values.Count(t => t == Tile.Black);
