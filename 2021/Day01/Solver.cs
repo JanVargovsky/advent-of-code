@@ -33,4 +33,16 @@ class Solver
         var result = increased.ToString();
         return result;
     }
+
+    public string SolveOneLiner(string input)
+    {
+        return input
+            .Split(Environment.NewLine)
+            .Select(int.Parse)
+            .Window(3)
+            .Select(t => t.Sum())
+            .Pairwise((a, b) => a < b)
+            .Count(t => t)
+            .ToString();
+    }
 }
