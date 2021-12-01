@@ -13,17 +13,20 @@ class Solver
 240
 269
 260
-263") == "7");
+263") == "5");
     }
 
     public string Solve(string input)
     {
         var data = input.Split(Environment.NewLine).Select(int.Parse).ToArray();
         var increased = 0;
+        const int windowSize = 3;
 
-        for (int i = 1; i < data.Length; i++)
+        for (int i = windowSize; i < data.Length; i++)
         {
-            if (data[i] > data[i - 1])
+            var window1 = data[(i - windowSize)..i].Sum();
+            var window2 = data[(i - windowSize + 1)..(i + 1)].Sum();
+            if (window1 < window2)
                 increased++;
         }
 
