@@ -9,7 +9,7 @@ down 5
 forward 8
 up 3
 down 8
-forward 2") == "150");
+forward 2") == "900");
     }
 
     public string Solve(string input)
@@ -17,6 +17,7 @@ forward 2") == "150");
         var commands = input.Split(Environment.NewLine);
         var depth = 0;
         var horizontal = 0;
+        var aim = 0;
 
         foreach (var item in commands)
         {
@@ -26,14 +27,15 @@ forward 2") == "150");
             if (command == "forward")
             {
                 horizontal += number;
+                depth += (aim * number);
             }
             else if (command == "down")
             {
-                depth += number;
+                aim += number;
             }
             else if (command == "up")
             {
-                depth -= number;
+                aim -= number;
             }
         }
 
