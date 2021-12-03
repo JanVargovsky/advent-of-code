@@ -21,9 +21,8 @@ class Solver
     public string Solve(string input)
     {
         var numbers = input.Split(Environment.NewLine);
-        var length = numbers[0].Length;
-        var generatorString = Determine(numbers, length, true);
-        var scrubberString = Determine(numbers, length, false);
+        var generatorString = Determine(numbers, true);
+        var scrubberString = Determine(numbers, false);
 
         var generator = Convert.ToInt32(generatorString, 2);
         var scrubber = Convert.ToInt32(scrubberString, 2);
@@ -31,26 +30,12 @@ class Solver
         var result = (generator * scrubber).ToString();
         return result;
 
-        static int CalculateOnesCount(IList<string> numbers, int index)
-        {
-            var ones = 0;
-            foreach (var number in numbers)
-            {
-                if (number[index] == '1')
-                {
-                    ones++;
-                }
-            }
-
-            return ones;
-        }
-
-        static string Determine(IList<string> numbers, int length, bool searchMostCommon)
+        static string Determine(IList<string> numbers, bool searchMostCommon)
         {
             var i = 0;
             while (numbers.Count != 1)
             {
-                var one = CalculateOnesCount(numbers, i);
+                var one = numbers.Count(t => t[i] == '1');
                 var zero = numbers.Count - one;
                 var bit = searchMostCommon switch
                 {
