@@ -15,44 +15,55 @@ class Solver
 10000
 11001
 00010
-01010") == "198");
+01010") == "230");
     }
 
     public string Solve(string input)
     {
         var numbers = input.Split(Environment.NewLine);
         var length = numbers[0].Length;
-        var gammaRate = 0;
-        var epsilon = 0;
+        var generatorString = Determine(numbers, length, true);
+        var scrubberString = Determine(numbers, length, false);
 
-        var ones = new int[length];
-        for (int i = 0; i < length; i++)
+        var generator = Convert.ToInt32(generatorString, 2);
+        var scrubber = Convert.ToInt32(scrubberString, 2);
+
+        var result = (generator * scrubber).ToString();
+        return result;
+
+        static int CalculateOnesCount(IList<string> numbers, int index)
         {
+            var ones = 0;
             foreach (var number in numbers)
             {
-                if (number[i] == '1')
+                if (number[index] == '1')
                 {
-                    ones[i]++;
+                    ones++;
                 }
             }
+
+            return ones;
         }
 
-        for (int i = 0; i < length; i++)
+        static string Determine(IList<string> numbers, int length, bool searchMostCommon)
         {
-            var one = ones[i];
-            var zero = numbers.Length - one;
+            var i = 0;
+            while (numbers.Count != 1)
+            {
+                var one = CalculateOnesCount(numbers, i);
+                var zero = numbers.Count - one;
+                var bit = searchMostCommon switch
+                {
+                    true => one > zero ? '1' : '0',
+                    false => one > zero ? '0' : '1'
+                };
+                if (one == zero) bit = searchMostCommon ? '1' : '0';
+                var filteredNumbers = numbers.Where(t => t[i] == bit).ToArray();
+                numbers = filteredNumbers;
+                i++;
+            }
 
-            if (one > zero)
-            {
-                gammaRate |= (1 << length - i - 1);
-            }
-            else
-            {
-                epsilon |= (1 << length - i - 1);
-            }
+            return numbers[0];
         }
-
-        var result = (gammaRate * epsilon).ToString();
-        return result;
     }
 }
