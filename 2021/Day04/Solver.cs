@@ -29,15 +29,16 @@ class Solver
     {
         var items = input.Split(Environment.NewLine + Environment.NewLine);
         var numbers = items[0].Split(',').Select(int.Parse).ToArray();
+        const int boardSize = 5;
         var bingoBoards = items.Skip(1).Select(b =>
         {
-            var rows = b.Split(Environment.NewLine);
-            var bingo = rows.Select(r => r.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray()).ToArray();
-            return new BingoBoard(bingo);
+            var numbers = b.Split(new[] { Environment.NewLine, " " }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(int.Parse).ToArray();
+            return new BingoBoard(numbers, boardSize);
         }).ToList();
 
-        var playedNumbers = new HashSet<int>(numbers.Take(5));
-        foreach (var number in numbers.Skip(5))
+        var playedNumbers = new HashSet<int>(numbers.Take(boardSize - 1));
+        foreach (var number in numbers.Skip(boardSize - 1))
         {
             playedNumbers.Add(number);
 
@@ -52,21 +53,14 @@ class Solver
             }
         }
 
-        throw new Exception("");
+        throw new Exception();
     }
 
-    class BingoBoard
+    record BingoBoard(int[] Board, int Length)
     {
-        public BingoBoard(int[][] board)
-        {
-            Board = board;
-        }
-
-        public int[][] Board { get; }
-
         public bool IsWinning(HashSet<int> numbers)
         {
-            for (int i = 0; i < Board.GetLength(0); i++)
+            for (int i = 0; i < Length; i++)
             {
                 if (CheckRow(i) || CheckColumn(i))
                     return true;
@@ -75,22 +69,20 @@ class Solver
 
             bool CheckRow(int row)
             {
-                for (int i = 0; i < Board.GetLength(0); i++)
+                for (int i = 0; i < Length; i++)
                 {
-                    if (!numbers.Contains(Board[row][i]))
+                    if (!numbers.Contains(Board[row * Length + i]))
                         return false;
-
                 }
                 return true;
             }
 
             bool CheckColumn(int column)
             {
-                for (int i = 0; i < Board.GetLength(0); i++)
+                for (int i = 0; i < Length; i++)
                 {
-                    if (!numbers.Contains(Board[i][column]))
+                    if (!numbers.Contains(Board[i * Length + column]))
                         return false;
-
                 }
                 return true;
             }
@@ -98,18 +90,8 @@ class Solver
 
         public int Score(HashSet<int> numbers, int lastNumber)
         {
-            int sum = 0;
-            for (int r = 0; r < Board.GetLength(0); r++)
-            {
-                for (int c = 0; c < Board.GetLength(0); c++)
-                {
-                    if (!numbers.Contains(Board[r][c]))
-                    {
-                        sum += Board[r][c];
-                    }
-                }
-            }
-            return sum * lastNumber;
+            var remaining = Board.Where(t => !numbers.Contains(t)).Sum();
+            return remaining * lastNumber;
         }
     }
 }
