@@ -22,7 +22,7 @@ class Solver
 10 16 15  9 19
 18  8 23 26 20
 22 11 13  6  5
- 2  0 12  3  7") == "4512");
+ 2  0 12  3  7") == "1924");
     }
 
     public string Solve(string input)
@@ -34,17 +34,20 @@ class Solver
             var rows = b.Split(Environment.NewLine);
             var bingo = rows.Select(r => r.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray()).ToArray();
             return new BingoBoard(bingo);
-        }).ToArray();
+        }).ToList();
 
         var playedNumbers = new HashSet<int>(numbers.Take(5));
         foreach (var number in numbers.Skip(5))
         {
             playedNumbers.Add(number);
-            foreach (var bingoBoard in bingoBoards)
+
+            foreach (var bingoBoard in bingoBoards.ToList())
             {
                 if (bingoBoard.IsWinning(playedNumbers))
                 {
-                    return bingoBoard.Score(playedNumbers, number).ToString();
+                    bingoBoards.Remove(bingoBoard);
+                    if (bingoBoards.Count == 0)
+                        return bingoBoard.Score(playedNumbers, number).ToString();
                 }
             }
         }
