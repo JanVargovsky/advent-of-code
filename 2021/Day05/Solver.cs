@@ -4,6 +4,8 @@ class Solver
 {
     public Solver()
     {
+        Debug.Assert(Solve(@"1,1 -> 3,3
+9,7 -> 7,9") == "0");
         Debug.Assert(Solve(@"0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
@@ -13,7 +15,7 @@ class Solver
 0,9 -> 2,9
 3,4 -> 1,4
 0,0 -> 8,8
-5,5 -> 8,2") == "5");
+5,5 -> 8,2") == "12");
     }
 
     public string Solve(string input)
@@ -47,9 +49,30 @@ class Solver
                         diagram[p] += 1;
                 }
             }
-        }
+            else // is diagonal
+            {
+                var (p, end) = line.X1 < line.X2 ?
+                    (new Point(line.X1, line.Y1), new Point(line.X2, line.Y2)) :
+                    (new Point(line.X2, line.Y2), new Point(line.X1, line.Y1));
 
-        //Print();
+                var inc = p.Y < end.Y ? 1 : -1;
+                while (true)
+                {
+                    if (!diagram.TryAdd(p, 1))
+                        diagram[p] += 1;
+                    if (p.Equals(end))
+                        break;
+
+                    p = p with
+                    {
+                        X = p.X + 1,
+                        Y = p.Y + inc,
+                    };
+                }
+            }
+
+            //Print();
+        }
 
         var result = diagram.Count(t => t.Value > 1);
         return result.ToString();
