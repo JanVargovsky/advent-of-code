@@ -40,6 +40,7 @@ class Solver
             //Print();
         }
 
+        //var linqResult = lines.SelectMany(t => t.Points).GroupBy(t => t).Select(t => t.Count()).Count(t => t > 1);
         var result = diagram.Count(t => t.Value > 1);
         return result.ToString();
 
