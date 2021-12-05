@@ -24,51 +24,17 @@ class Solver
         {
             var coords = line.Split(new[] { ",", " -> " }, StringSplitOptions.None);
             return new Line(
-                int.Parse(coords[0]), int.Parse(coords[1]),
-                int.Parse(coords[2]), int.Parse(coords[3]));
+                new(int.Parse(coords[0]), int.Parse(coords[1])),
+                new(int.Parse(coords[2]), int.Parse(coords[3])));
         });
         var diagram = new Dictionary<Point, int>();
 
         foreach (var line in lines)
         {
-            if (line.IsHorizontal)
+            foreach (var point in line.Points)
             {
-                for (int y = Math.Min(line.Y1, line.Y2); y <= Math.Max(line.Y1, line.Y2); y++)
-                {
-                    var p = new Point(line.X1, y);
-                    if (!diagram.TryAdd(p, 1))
-                        diagram[p] += 1;
-                }
-            }
-            else if (line.IsVertical)
-            {
-                for (int x = Math.Min(line.X1, line.X2); x <= Math.Max(line.X1, line.X2); x++)
-                {
-                    var p = new Point(x, line.Y1);
-                    if (!diagram.TryAdd(p, 1))
-                        diagram[p] += 1;
-                }
-            }
-            else // is diagonal
-            {
-                var (p, end) = line.X1 < line.X2 ?
-                    (new Point(line.X1, line.Y1), new Point(line.X2, line.Y2)) :
-                    (new Point(line.X2, line.Y2), new Point(line.X1, line.Y1));
-
-                var inc = p.Y < end.Y ? 1 : -1;
-                while (true)
-                {
-                    if (!diagram.TryAdd(p, 1))
-                        diagram[p] += 1;
-                    if (p.Equals(end))
-                        break;
-
-                    p = p with
-                    {
-                        X = p.X + 1,
-                        Y = p.Y + inc,
-                    };
-                }
+                if (!diagram.TryAdd(point, 1))
+                    diagram[point] += 1;
             }
 
             //Print();
@@ -93,11 +59,30 @@ class Solver
         }
     }
 
-    record Point(int X, int Y);
-
-    record Line(int X1, int Y1, int X2, int Y2)
+    record Point(int X, int Y)
     {
-        public bool IsHorizontal => X1 == X2;
-        public bool IsVertical => Y1 == Y2;
+        public static Point operator +(Point a, Point b)
+        {
+            return new Point(a.X + b.X, a.Y + b.Y);
+        }
+    }
+
+    record Line(Point Start, Point End)
+    {
+        public IEnumerable<Point> Points => GetPoints();
+
+        private IEnumerable<Point> GetPoints()
+        {
+            var increment = new Point(Math.Sign(End.X - Start.X), Math.Sign(End.Y - Start.Y));
+            var current = Start;
+
+            while (true)
+            {
+                yield return current;
+                if (current == End)
+                    break;
+                current += increment;
+            }
+        }
     }
 }
