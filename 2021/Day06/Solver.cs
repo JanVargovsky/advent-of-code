@@ -4,31 +4,42 @@ class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve(@"3,4,3,1,2") == "5934");
+        Debug.Assert(Solve(@"3,4,3,1,2", 18) == "26");
+        Debug.Assert(Solve(@"3,4,3,1,2", 80) == "5934");
+        Debug.Assert(Solve(@"3,4,3,1,2") == "26984457539");
     }
 
-    public string Solve(string input)
+    public string Solve(string input, int days = 256)
     {
-        var lanternfishs = input.Split(',').Select(int.Parse).ToList();
-
-        for (int d = 0; d < 80; d++)
+        var items = input.Split(',').Select(int.Parse);
+        const int maxAge = 9;
+        var lanternfishs = new long[maxAge];
+        foreach (var item in items)
         {
-            var l = lanternfishs.Count;
-            for (int i = 0; i < l; i++)
+            lanternfishs[item]++;
+        }
+
+        for (int d = 0; d < days; d++)
+        {
+            var newLanternfishs = new long[maxAge];
+            for (int fish = 0; fish < maxAge; fish++)
             {
-                if (lanternfishs[i] == 0)
+                var count = lanternfishs[fish];
+                if (fish == 0)
                 {
-                    lanternfishs[i] = 6;
-                    lanternfishs.Add(8);
+                    newLanternfishs[8] += count;
+                    newLanternfishs[6] += count;
                 }
                 else
                 {
-                    lanternfishs[i]--;
+                    newLanternfishs[fish - 1] += count;
                 }
             }
+            //Console.WriteLine($"Day {d,3} {string.Join(',', lanternfishs)} => {string.Join(',', newLanternfishs)}");
+            lanternfishs = newLanternfishs;
         }
 
-        var result = lanternfishs.Count;
+        var result = lanternfishs.Sum();
         return result.ToString();
     }
 }
