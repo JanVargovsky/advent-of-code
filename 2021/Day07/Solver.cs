@@ -4,7 +4,7 @@ class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve(@"16,1,2,0,4,2,7,1,2,14") == "37");
+        Debug.Assert(Solve(@"16,1,2,0,4,2,7,1,2,14") == "168");
     }
 
     public string Solve(string input)
@@ -22,6 +22,6 @@ class Solver
 
         return min.ToString();
 
-        long Calculate(long align) => positions.Sum(t => Math.Abs(align - t));
+        long Calculate(long align) => positions.Select(t => Math.Abs(align - t)).Sum(t => t * (t + 1) / 2);
     }
 }
