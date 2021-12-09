@@ -8,7 +8,7 @@ class Solver
 3987894921
 9856789892
 8767896789
-9899965678") == "15");
+9899965678") == "1134");
     }
 
     public string Solve(string input)
@@ -23,39 +23,52 @@ class Solver
             new(-1, 0),
         };
 
-        var result = 0;
+        var visited = new HashSet<Point>();
+        var basinSizes = new List<int>();
+
         for (int y = 0; y < map.Length; y++)
         {
             for (int x = 0; x < map[y].Length; x++)
             {
-                if (IsLowPoint(x, y))
-                {
-                    var value = map[y][x] - '0';
-                    var riskLevel = value + 1;
-                    result += riskLevel;
-                }
+                var basinSize = ScanBasin(x, y);
+                if (basinSize > 0)
+                    basinSizes.Add(basinSize);
             }
         }
 
+        var result = basinSizes.OrderByDescending(t => t).Take(3).Aggregate(1, (t, x) => t * x);
+
         return result.ToString();
 
-        bool IsLowPoint(int x, int y)
+        int ScanBasin(int x, int y)
         {
-            var value = map[y][x];
+            var size = 0;
+            var queue = new Queue<Point>();
+            queue.Enqueue(new Point(x, y));
 
-            foreach (var direction in directions)
+            while (queue.Count > 0)
             {
-                var xi = x + direction.X;
-                var yi = y + direction.Y;
-                if (!IsValid(xi, yi))
+                var p = queue.Dequeue();
+
+                if (!IsValid(p.X, p.Y))
                     continue;
 
-                var adjacentValue = map[yi][xi];
-                if (value >= adjacentValue)
-                    return false;
+                if (!visited.Add(p))
+                    continue;
+
+                var value = map[p.Y][p.X];
+                if (value == '9')
+                    continue;
+
+                size++;
+
+                foreach (var direction in directions)
+                {
+                    queue.Enqueue(p + direction);
+                }
             }
 
-            return true;
+            return size;
         }
 
         bool IsValid(int x, int y) => x >= 0 && y >= 0 && y < map.Length && x < map[y].Length;
