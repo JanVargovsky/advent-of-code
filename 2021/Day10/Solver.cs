@@ -13,7 +13,7 @@ class Solver
 {<[[]]>}<{[{[{[]{()[[[]
 [<(<(<(<{}))><([]([]()
 <{([([[(<>()){}]>(<<{{
-<{([{{}}[<[[[<>{}]]]>[]]") == "26397");
+<{([{{}}[<[[[<>{}]]]>[]]") == "288957");
     }
 
     public string Solve(string input)
@@ -27,11 +27,12 @@ class Solver
             ['>'] = '<',
         };
 
-        var result = items.Sum(Validate);
+        var results = items.Select(Validate).Where(t => t != 0).OrderBy(t => t).ToArray();
+        var result = results[results.Length / 2];
 
         return result.ToString();
 
-        int Validate(string line)
+        long Validate(string line)
         {
             var s = new Stack<char>();
 
@@ -42,13 +43,7 @@ class Solver
                     var lastStart = s.Pop();
                     if (start != lastStart)
                     {
-                        return start switch
-                        {
-                            '(' => 3,
-                            '[' => 57,
-                            '{' => 1197,
-                            '<' => 25137,
-                        };
+                        return 0;
                     }
                 }
                 else
@@ -57,7 +52,22 @@ class Solver
                 }
             }
 
-            return 0;
+            var score = 0L;
+
+            foreach (var c in s)
+            {
+                var p = c switch
+                {
+                    '(' => 1,
+                    '[' => 2,
+                    '{' => 3,
+                    '<' => 4,
+                };
+                score *= 5;
+                score += p;
+            }
+
+            return score;
         }
     }
 }
