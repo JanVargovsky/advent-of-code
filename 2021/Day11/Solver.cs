@@ -4,12 +4,6 @@ class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve(@"11111
-19991
-19191
-19991
-11111", 2) == "9");
-
         Debug.Assert(Solve(@"5483143223
 2745854711
 5264556173
@@ -19,22 +13,26 @@ class Solver
 2176841721
 6882881134
 4846848554
-5283751526") == "1656");
+5283751526") == "195");
     }
 
-    public string Solve(string input, int steps = 100)
+    public string Solve(string input)
     {
         var energies = input.Split(Environment.NewLine).Select(t => t.Select(c => c - '0').ToArray()).ToArray();
-        var result = 0;
+        var length = energies.Length * energies[0].Length;
+        //Print("Before any steps:");
 
-        Print("Before any steps:");
-
-        for (int step = 0; step < steps; step++)
+        var steps = 1;
+        while (true)
         {
-            result += ProcessStep();
-            Print($"After step {step + 1}:");
+            var flashes = ProcessStep();
+            //Print($"After step {steps}:");
+            if (flashes == length)
+                break;
+            steps++;
         }
 
+        var result = steps;
         return result.ToString();
 
         int ProcessStep()
