@@ -10,7 +10,7 @@ A-c
 A-b
 b-d
 A-end
-b-end") == "10");
+b-end") == "36");
         Debug.Assert(Solve(@"dc-end
 HN-start
 start-kj
@@ -20,7 +20,7 @@ LN-dc
 HN-end
 kj-sa
 kj-HN
-kj-dc") == "19");
+kj-dc") == "103");
         Debug.Assert(Solve(@"fs-end
 he-DX
 fs-he
@@ -38,7 +38,7 @@ start-pj
 he-WI
 zg-he
 pj-fs
-start-RW") == "226");
+start-RW") == "3509");
     }
 
     public string Solve(string input)
@@ -66,10 +66,10 @@ start-RW") == "226");
 
         var start = nodes.Keys.First(t => t.Name == "start");
         var end = nodes.Keys.First(t => t.Name == "end");
-        var result = Search(start, new() { start });
+        var result = Search(start, new() { start }, false);
         return result.ToString();
 
-        int Search(Node node, HashSet<Node> visited)
+        int Search(Node node, HashSet<Node> visited, bool visitedTwice)
         {
             if (node == end)
                 return 1;
@@ -77,6 +77,9 @@ start-RW") == "226");
             var count = 0;
             foreach (var nextNode in nodes[node])
             {
+                if (nextNode == start)
+                    continue;
+
                 if (nextNode.IsSmall)
                 {
                     if (!visited.Contains(nextNode))
@@ -85,11 +88,19 @@ start-RW") == "226");
                         {
                             nextNode
                         };
-                        count += Search(nextNode, newVisited);
+                        count += Search(nextNode, newVisited, visitedTwice);
+                    }
+                    else if (!visitedTwice)
+                    {
+                        var newVisited = new HashSet<Node>(visited)
+                        {
+                            nextNode
+                        };
+                        count += Search(nextNode, newVisited, true);
                     }
                 }
                 else
-                    count += Search(nextNode, visited);
+                    count += Search(nextNode, visited, visitedTwice);
             }
             return count;
         }
