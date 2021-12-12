@@ -66,10 +66,58 @@ start-RW") == "3509");
 
         var start = nodes.Keys.First(t => t.Name == "start");
         var end = nodes.Keys.First(t => t.Name == "end");
-        var result = Search(start, new() { start }, false);
+        var result = Search(start);
+        //var result = SearchRecursive(start, new() { start }, false);
         return result.ToString();
 
-        int Search(Node node, HashSet<Node> visited, bool visitedTwice)
+        int Search(Node start)
+        {
+            var count = 0;
+            var q = new Queue<(Node, HashSet<Node>, bool)>();
+            q.Enqueue((start, new(), false));
+
+            while (q.Count > 0)
+            {
+                var (node, visited, visitedTwice) = q.Dequeue();
+
+                if (node == end)
+                {
+                    count++;
+                    continue;
+                }
+
+                foreach (var nextNode in nodes[node])
+                {
+                    if (nextNode == start)
+                        continue;
+
+                    if (nextNode.IsSmall)
+                    {
+                        if (!visited.Contains(nextNode))
+                        {
+                            var newVisited = new HashSet<Node>(visited);
+                            newVisited.Add(nextNode);
+                            q.Enqueue((nextNode, newVisited, visitedTwice));
+                        }
+                        else if (!visitedTwice)
+                        {
+                            var newVisited = new HashSet<Node>(visited);
+                            newVisited.Add(nextNode);
+                            q.Enqueue((nextNode, newVisited, true));
+                        }
+                    }
+                    else
+                    {
+                        q.Enqueue((nextNode, visited, visitedTwice));
+                    }
+                }
+
+            }
+
+            return count;
+        }
+
+        int SearchRecursive(Node node, HashSet<Node> visited, bool visitedTwice)
         {
             if (node == end)
                 return 1;
@@ -88,7 +136,7 @@ start-RW") == "3509");
                         {
                             nextNode
                         };
-                        count += Search(nextNode, newVisited, visitedTwice);
+                        count += SearchRecursive(nextNode, newVisited, visitedTwice);
                     }
                     else if (!visitedTwice)
                     {
@@ -96,11 +144,11 @@ start-RW") == "3509");
                         {
                             nextNode
                         };
-                        count += Search(nextNode, newVisited, true);
+                        count += SearchRecursive(nextNode, newVisited, true);
                     }
                 }
                 else
-                    count += Search(nextNode, visited, visitedTwice);
+                    count += SearchRecursive(nextNode, visited, visitedTwice);
             }
             return count;
         }
