@@ -63,7 +63,7 @@ fold along x=5") == @"#####
         }
 
         var result = Print(false, 'x', -1);
-        //Console.WriteLine(result);
+        //Console.WriteLine(Print(false, 'x', -1, '█', ' '));
         return result;
 
         void Fold(char axis, int value)
@@ -101,7 +101,7 @@ fold along x=5") == @"#####
             points = newPoints;
         }
 
-        string Print(bool showFold, char axis, int value)
+        string Print(bool showFold, char axis, int value, char dot = '#', char empty = '.')
         {
             var sb = new StringBuilder();
             var topLeft = new Point(points.Min(t => t.X), points.Min(t => t.Y));
@@ -117,7 +117,7 @@ fold along x=5") == @"#####
                     else if (showFold && axis == 'x' && x == value)
                         sb.Append('|');
                     else
-                        sb.Append(points.Contains(new Point(x, y)) ? '#' : '.');
+                        sb.Append(points.Contains(new Point(x, y)) ? dot : empty);
                 }
                 sb.AppendLine();
             }
