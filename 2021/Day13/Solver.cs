@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode.Year2021.Day13;
+﻿using System.Text;
+
+namespace AdventOfCode.Year2021.Day13;
 
 class Solver
 {
@@ -24,7 +26,11 @@ class Solver
 9,0
 
 fold along y=7
-fold along x=5") == "17");
+fold along x=5") == @"#####
+#...#
+#...#
+#...#
+#####");
     }
 
     public string Solve(string input)
@@ -49,15 +55,16 @@ fold along x=5") == "17");
             var axis = items[i][separator - 1];
             var value = int.Parse(items[i][(separator + 1)..]);
 
-            //Print(true, axis, value);
+            //Console.WriteLine(items[i]);
+            //Console.WriteLine(Print(true, axis, value));
             Fold(axis, value);
-            //Print(false, axis, value);
-            break;
+            //Console.WriteLine(Print(false, axis, value));
+            //Console.WriteLine();
         }
 
-
-        var result = points.Count;
-        return result.ToString();
+        var result = Print(false, 'x', -1);
+        //Console.WriteLine(result);
+        return result;
 
         void Fold(char axis, int value)
         {
@@ -94,27 +101,28 @@ fold along x=5") == "17");
             points = newPoints;
         }
 
-        void Print(bool showFold, char axis, int value)
+        string Print(bool showFold, char axis, int value)
         {
+            var sb = new StringBuilder();
             var topLeft = new Point(points.Min(t => t.X), points.Min(t => t.Y));
             var bottomRight = new Point(points.Max(t => t.X), points.Max(t => t.Y));
             for (int y = topLeft.Y; y <= bottomRight.Y; y++)
             {
-
                 for (int x = topLeft.X; x <= bottomRight.X; x++)
                 {
                     if (showFold && axis == 'y' && y == value)
                     {
-                        Console.Write('-');
+                        sb.Append('-');
                     }
                     else if (showFold && axis == 'x' && x == value)
-                        Console.Write('|');
+                        sb.Append('|');
                     else
-                        Console.Write(points.Contains(new Point(x, y)) ? "#" : ".");
+                        sb.Append(points.Contains(new Point(x, y)) ? '#' : '.');
                 }
-                Console.WriteLine();
+                sb.AppendLine();
             }
-            Console.WriteLine();
+            sb.Length -= Environment.NewLine.Length;
+            return sb.ToString();
         }
     }
 
