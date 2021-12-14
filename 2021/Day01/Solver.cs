@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode.Year2021.Day01;
+﻿using MoreLinq;
+
+namespace AdventOfCode.Year2021.Day01;
 
 class Solver
 {
