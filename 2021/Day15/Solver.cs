@@ -46,12 +46,12 @@ class Solver
                 for (int y = 0; y < length; y++)
                     distances[x, y] = int.MaxValue;
 
-            var q = new Queue<(int, int, int)>();
-            q.Enqueue((0, 0, 0));
+            var q = new PriorityQueue<(int, int), int>();
+            q.Enqueue((0, 0), 0);
 
-            while (q.Count > 0)
+            while (q.TryDequeue(out var coords, out var pathCost))
             {
-                var (x, y, pathCost) = q.Dequeue();
+                var (x, y) = coords;
                 if (x < 0 || y < 0 || x >= length || y >= length)
                     continue;
 
@@ -60,10 +60,10 @@ class Solver
                 if (distances[x, y] > pathCost)
                 {
                     distances[x, y] = pathCost;
-                    q.Enqueue((x + 1, y, pathCost));
-                    q.Enqueue((x - 1, y, pathCost));
-                    q.Enqueue((x, y + 1, pathCost));
-                    q.Enqueue((x, y - 1, pathCost));
+                    q.Enqueue((x + 1, y), pathCost);
+                    q.Enqueue((x - 1, y), pathCost);
+                    q.Enqueue((x, y + 1), pathCost);
+                    q.Enqueue((x, y - 1), pathCost);
                 }
             }
 
