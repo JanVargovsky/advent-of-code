@@ -8,8 +8,8 @@ class Solver
     {
         Debug.Assert(ConvertToBits("D2FE28") == "110100101111111000101000");
         Debug.Assert(DecodeLiteral("101111111000101000") == "011111100101");
-        Debug.Assert(DecodeSingleLiteral("11010001010").Value == 10);
-        Debug.Assert(DecodeSingleLiteral("01010010001001000000000").Value == 20);
+        Debug.Assert(Decode("11010001010") is LiteralPacket { Value: 10 });
+        Debug.Assert(Decode("01010010001001000000000") is LiteralPacket { Value: 20 });
 
         // just to debug flow
         //Debug.Assert(Solve(@"38006F45291200") == "?");
@@ -24,19 +24,30 @@ class Solver
     public string Solve(string input)
     {
         var bits = ConvertToBits(input);
-        int offset = 0;
-        var packets = Decode(bits, ref offset).ToList();
-        var result = packets.Sum(t => t.Version);
+        var packet = Decode(bits);
+        var result = Evaluate(packet);
         return result.ToString();
     }
 
-    LiteralPacket DecodeSingleLiteral(string bits)
+    long Evaluate(Packet packet) => packet switch
     {
-        var offset = 0;
-        return (LiteralPacket)Decode(bits, ref offset).Single();
+        LiteralPacket literalPacket => Evaluate(literalPacket),
+        OperatorPacket operatorPacket => Evaluate(operatorPacket),
+        _ => throw new NotSupportedException()
+    };
+
+    long Evaluate(LiteralPacket packet) => packet.Version;
+
+    long Evaluate(OperatorPacket packet) => packet.Version + packet.SubPackets.Sum(Evaluate);
+
+    Packet Decode(string bits)
+    {
+        int offset = 0;
+        var packet = Decode(bits, ref offset);
+        return packet;
     }
 
-    IEnumerable<Packet> Decode(string bits, ref int offset)
+    Packet Decode(string bits, ref int offset)
     {
         var version = Convert.ToByte(bits[offset..(offset + 3)], 2);
         offset += 3;
@@ -47,13 +58,12 @@ class Solver
         {
             var literal = DecodeLiteral(bits, ref offset);
             var number = Convert.ToInt64(literal, 2);
-            return new Packet[] { new LiteralPacket(version, typeID, number) };
+            return new LiteralPacket(version, typeID, number);
         }
         else
         {
-            var @operator = new Packet(version, typeID);
             var subPackets = DecodeOperator(bits, ref offset);
-            return subPackets.Append(@operator);
+            return new OperatorPacket(version, typeID, subPackets.ToArray());
         }
     }
 
@@ -71,7 +81,7 @@ class Solver
             var subPackets = new List<Packet>();
             while (offset - start != totalLength)
             {
-                subPackets.AddRange(Decode(bits, ref offset));
+                subPackets.Add(Decode(bits, ref offset));
             }
             return subPackets;
         }
@@ -80,12 +90,12 @@ class Solver
             var numberOfSubPackets = Convert.ToInt32(bits[offset..(offset + 11)], 2);
             offset += 11;
 
-            var subPackets = new IEnumerable<Packet>[numberOfSubPackets];
+            var subPackets = new Packet[numberOfSubPackets];
             for (int i = 0; i < numberOfSubPackets; i++)
             {
                 subPackets[i] = Decode(bits, ref offset);
             }
-            return subPackets.SelectMany(t => t);
+            return subPackets;
         }
     }
 
@@ -128,4 +138,5 @@ class Solver
 
     record Packet(byte Version, byte TypeId);
     record LiteralPacket(byte Version, byte TypeId, long Value) : Packet(Version, TypeId);
+    record OperatorPacket(byte Version, byte TypeId, Packet[] SubPackets) : Packet(Version, TypeId);
 }
