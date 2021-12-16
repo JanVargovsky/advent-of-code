@@ -15,10 +15,19 @@ class Solver
         //Debug.Assert(Solve(@"38006F45291200") == "?");
         //Debug.Assert(Solve(@"EE00D40C823060") == "?");
 
-        Debug.Assert(Solve(@"8A004A801A8002F478") == "16");
-        Debug.Assert(Solve(@"620080001611562C8802118E34") == "12");
-        Debug.Assert(Solve(@"C0015000016115A2E0802F182340") == "23");
-        Debug.Assert(Solve(@"A0016C880162017C3686B18A3D4780") == "31");
+        //Debug.Assert(Solve(@"8A004A801A8002F478") == "16");
+        //Debug.Assert(Solve(@"620080001611562C8802118E34") == "12");
+        //Debug.Assert(Solve(@"C0015000016115A2E0802F182340") == "23");
+        //Debug.Assert(Solve(@"A0016C880162017C3686B18A3D4780") == "31");
+
+        Debug.Assert(Solve("C200B40A82") == "3");
+        Debug.Assert(Solve("04005AC33890") == "54");
+        Debug.Assert(Solve("880086C3E88112") == "7");
+        Debug.Assert(Solve("CE00C43D881120") == "9");
+        Debug.Assert(Solve("D8005AC2A8F0") == "1");
+        Debug.Assert(Solve("F600BC2D8F") == "0");
+        Debug.Assert(Solve("9C005AC2F8F0") == "0");
+        Debug.Assert(Solve("9C0141080250320F1802104A08") == "1");
     }
 
     public string Solve(string input)
@@ -36,9 +45,19 @@ class Solver
         _ => throw new NotSupportedException()
     };
 
-    long Evaluate(LiteralPacket packet) => packet.Version;
+    long Evaluate(LiteralPacket packet) => packet.Value;
 
-    long Evaluate(OperatorPacket packet) => packet.Version + packet.SubPackets.Sum(Evaluate);
+    long Evaluate(OperatorPacket packet) => packet.TypeId switch
+    {
+        0 => packet.SubPackets.Sum(Evaluate),
+        1 => packet.SubPackets.Aggregate(1L, (a, p) => a * Evaluate(p)),
+        2 => packet.SubPackets.Min(Evaluate),
+        3 => packet.SubPackets.Max(Evaluate),
+        5 => Evaluate(packet.SubPackets[0]) > Evaluate(packet.SubPackets[1]) ? 1L : 0L,
+        6 => Evaluate(packet.SubPackets[0]) < Evaluate(packet.SubPackets[1]) ? 1L : 0L,
+        7 => Evaluate(packet.SubPackets[0]) == Evaluate(packet.SubPackets[1]) ? 1L : 0L,
+        _ => throw new NotSupportedException()
+    };
 
     Packet Decode(string bits)
     {
