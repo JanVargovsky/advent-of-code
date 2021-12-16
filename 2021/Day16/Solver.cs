@@ -59,88 +59,68 @@ class Solver
         _ => throw new NotSupportedException()
     };
 
-    Packet Decode(string bits)
+    Packet Decode(StringStream bits)
     {
-        int offset = 0;
-        var packet = Decode(bits, ref offset);
-        return packet;
-    }
-
-    Packet Decode(string bits, ref int offset)
-    {
-        var version = Convert.ToByte(bits[offset..(offset + 3)], 2);
-        offset += 3;
-        var typeID = Convert.ToByte(bits[offset..(offset + 3)], 2);
-        offset += 3;
+        var version = Convert.ToByte(bits.Read(3).ToString(), 2);
+        var typeID = Convert.ToByte(bits.Read(3).ToString(), 2);
 
         if (typeID is 4)
         {
-            var literal = DecodeLiteral(bits, ref offset);
+            var literal = DecodeLiteral(bits);
             var number = Convert.ToInt64(literal, 2);
             return new LiteralPacket(version, typeID, number);
         }
         else
         {
-            var subPackets = DecodeOperator(bits, ref offset);
-            return new OperatorPacket(version, typeID, subPackets.ToArray());
+            var subPackets = DecodeOperator(bits);
+            return new OperatorPacket(version, typeID, subPackets);
         }
     }
 
-    IEnumerable<Packet> DecodeOperator(string bits, ref int offset)
+    IList<Packet> DecodeOperator(StringStream bits)
     {
-        var lengthTypeID = bits[offset];
-        offset += 1;
+        var lengthTypeID = bits.Read();
 
         if (lengthTypeID == '0')
         {
-            var totalLength = Convert.ToInt32(bits[offset..(offset + 15)], 2);
-            offset += 15;
+            var totalLength = Convert.ToInt32(bits.Read(15).ToString(), 2);
 
-            var start = offset;
+            var start = bits.Offset;
             var subPackets = new List<Packet>();
-            while (offset - start != totalLength)
+            while (bits.Offset - start != totalLength)
             {
-                subPackets.Add(Decode(bits, ref offset));
+                subPackets.Add(Decode(bits));
             }
             return subPackets;
         }
         else
         {
-            var numberOfSubPackets = Convert.ToInt32(bits[offset..(offset + 11)], 2);
-            offset += 11;
+            var numberOfSubPackets = Convert.ToInt32(bits.Read(11).ToString(), 2);
 
             var subPackets = new Packet[numberOfSubPackets];
             for (int i = 0; i < numberOfSubPackets; i++)
             {
-                subPackets[i] = Decode(bits, ref offset);
+                subPackets[i] = Decode(bits);
             }
             return subPackets;
         }
     }
 
-    string DecodeLiteral(string bits)
-    {
-        var offset = 0;
-        return DecodeLiteral(bits, ref offset);
-    }
-
-    string DecodeLiteral(string bits, ref int offset)
+    string DecodeLiteral(StringStream bits)
     {
         var sb = new StringBuilder();
-        while (bits[offset] == '1')
+        while (bits.Read() == '1')
         {
-            sb.Append(bits[(offset + 1)..(offset + 5)]);
-            offset += 5;
+            sb.Append(bits.Read(4));
         }
-        sb.Append(bits[(offset + 1)..(offset + 5)]);
-        offset += 5;
+        sb.Append(bits.Read(4));
 
         return sb.ToString();
     }
 
     string ConvertToBits(string packet)
     {
-        var bits = new StringBuilder();
+        var bits = new StringBuilder(packet.Length * 4);
         foreach (var base16 in packet)
         {
             //var base10 = Convert.ToInt16(base16.ToString(), 16);
@@ -157,5 +137,26 @@ class Solver
 
     record Packet(byte Version, byte TypeId);
     record LiteralPacket(byte Version, byte TypeId, long Value) : Packet(Version, TypeId);
-    record OperatorPacket(byte Version, byte TypeId, Packet[] SubPackets) : Packet(Version, TypeId);
+    record OperatorPacket(byte Version, byte TypeId, IList<Packet> SubPackets) : Packet(Version, TypeId);
+
+    record StringStream(string Data)
+    {
+        public int Offset { get; private set; }
+
+        public char Read()
+        {
+            var c = Data[Offset];
+            Offset++;
+            return c;
+        }
+
+        public ReadOnlySpan<char> Read(int length)
+        {
+            var c = Data.AsSpan().Slice(Offset, length);
+            Offset += length;
+            return c;
+        }
+
+        public static implicit operator StringStream(string data) => new(data);
+    }
 }
