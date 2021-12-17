@@ -4,7 +4,7 @@ class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve("target area: x=20..30, y=-10..-5") == "45");
+        Debug.Assert(Solve("target area: x=20..30, y=-10..-5") == "112");
     }
 
     public string Solve(string input)
@@ -14,18 +14,18 @@ class Solver
             .ToArray();
         var (xMin, xMax, yMin, yMax) = (items[0], items[1], items[2], items[3]);
 
-        var highestY = int.MinValue;
-        for (int x = 0; x < 1000; x++)
-            for (int y = 0; y < 1000; y++)
+        const int limit = 1000;
+        var velocities = 0;
+        for (int x = -limit; x <= limit; x++)
+            for (int y = -limit; y <= limit; y++)
             {
-                if (Simulate(x, y, out var currentHighestY))
+                if (Simulate(x, y, out var _))
                 {
-                    if (highestY < currentHighestY)
-                        highestY = currentHighestY;
+                    velocities++;
                 }
             }
 
-        var result = highestY;
+        var result = velocities;
         return result.ToString();
 
         bool Simulate(int velocityX, int velocityY, out int highestY)
