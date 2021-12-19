@@ -6,7 +6,9 @@ class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve(@"--- scanner 0 ---
+        if (false)
+        {
+            Debug.Assert(Solve(@"--- scanner 0 ---
 0,2
 4,1
 3,3
@@ -16,7 +18,7 @@ class Solver
 -5,0
 -2,1", 3) == "3");
 
-        Debug.Assert(Solve(@"--- scanner 0 ---
+            Debug.Assert(Solve(@"--- scanner 0 ---
 0,0
 1,1
 10,10
@@ -26,7 +28,7 @@ class Solver
 3,-3
 100,-100", 2) == "4");
 
-        Debug.Assert(Solve(@"--- scanner 0 ---
+            Debug.Assert(Solve(@"--- scanner 0 ---
 -1,-1,1
 -2,-2,2
 -3,-3,3
@@ -73,6 +75,7 @@ class Solver
 4,2,3
 -5,-3,-4
 1,8,-7", 6) == "6");
+        }
 
         Debug.Assert(Solve(@"--- scanner 0 ---
 404,-588,-901
@@ -209,7 +212,7 @@ class Solver
 839,-516,451
 891,-625,532
 -652,-548,-490
-30,-46,-14") == "79");
+30,-46,-14") == "3621");
     }
 
     public string Solve(string input, int minOverlap = 12)
@@ -249,7 +252,8 @@ class Solver
                     }
         }
 
-        var points = new HashSet<Vector>();
+        //var points = new HashSet<Vector>();
+        var scannerPositions = new List<Vector>();
         foreach (var scanner in scanners)
         {
             Console.WriteLine($"Adding {scanner.Id}");
@@ -259,11 +263,13 @@ class Solver
 
             while (currentScanner != null && overlaps.TryGetValue(currentScanner, out var value))
             {
-                transformed = transformed with { Points = Rotate(transformed, value.Rotation).Points.Select(p => p + value.Offset).ToList() };
+                offset = offset * value.Rotation + value.Offset;
+                //transformed = transformed with { Points = Rotate(transformed, value.Rotation).Points.Select(p => p + value.Offset).ToList() };
                 currentScanner = value.Scanner;
             }
             if (currentScanner is null) currentScanner = scanner;
 
+            scannerPositions.Add(offset);
             Console.WriteLine($"offset {offset}");
 
             var movedPoints = transformed.Points;
@@ -272,11 +278,25 @@ class Solver
             //    Console.WriteLine(string.Join(",", p));
             //}
             //Console.WriteLine();
-            points.UnionWith(movedPoints);
+            //points.UnionWith(movedPoints);
         }
 
-        var result = points.Count;
+        var maxDistance = 0;
+        for (int i = 0; i < scannerPositions.Count; i++)
+        {
+            for (int j = i + 1; j < scannerPositions.Count; j++)
+            {
+                maxDistance = Math.Max(maxDistance, ManhattanDistance(scannerPositions[i], scannerPositions[j]));
+            }
+        }
+
+        var result = maxDistance;
         return result.ToString();
+
+        int ManhattanDistance(Vector a, Vector b)
+        {
+            return (a - b).Values.Sum(Math.Abs);
+        }
 
         bool Overlaps(Scanner scannerA, Scanner scannerB, [NotNullWhen(true)] out Vector? offset)
         {
