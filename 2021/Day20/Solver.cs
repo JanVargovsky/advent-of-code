@@ -45,7 +45,7 @@ class Solver
 
         for (int t = 0; t < time; t++)
         {
-            var offset = 5;
+            var offset = 3;
             var minX = image.Min(p => p.X);
             var maxX = image.Max(p => p.X);
             var minY = image.Min(p => p.Y);
