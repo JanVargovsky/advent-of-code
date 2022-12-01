@@ -19,7 +19,7 @@ internal class Solver
 9000
 
 10000
-""") == "24000");
+""") == "45000");
     }
 
     public string Solve(string input)
@@ -27,7 +27,7 @@ internal class Solver
         var data = input.Split(Environment.NewLine + Environment.NewLine);
         var sums = data.Select(t => t.Split(Environment.NewLine).Select(long.Parse).Sum());
 
-        var result = sums.Max();
+        var result = sums.OrderDescending().Take(3).Sum();
         return result.ToString();
     }
 }
