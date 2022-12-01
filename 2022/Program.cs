@@ -21,6 +21,7 @@ async Task<string> GetOrDownloadInputAsync()
         var session = Environment.GetEnvironmentVariable(AOCSESSION) ?? throw new ArgumentException($"Env. variable '{AOCSESSION}' is missing.");
         using HttpClient httpClient = new();
         httpClient.DefaultRequestHeaders.Add("Cookie", $"session={session}");
+        httpClient.DefaultRequestHeaders.UserAgent.Add(new("(github.com/JanVargovsky/advent-of-code by jan.vargovsky@gmail.com)"));
         var input = await httpClient.GetStringAsync($"https://adventofcode.com/{year}/day/{day}/input");
         Directory.CreateDirectory(Path.GetDirectoryName(path));
         // downloaded input is using Unix line ending, so we convert according to current OS
