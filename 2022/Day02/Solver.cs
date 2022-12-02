@@ -8,7 +8,7 @@ internal class Solver
 A Y
 B X
 C Z
-""") == "15");
+""") == "12");
     }
 
     public string Solve(string input)
@@ -19,10 +19,10 @@ C Z
 
         foreach (var row in rows)
         {
-            var opponent = Parse(row[0]);
-            var me = Parse(row[^1]);
+            var opponent = ParsePlay(row[0]);
+            var result = ParseResult(row[^1]);
 
-            var result = GetResult(me, opponent);
+            var me = Enum.GetValues<Plays>().First(me => GetResult(me, opponent) == result);
 
             score += (int)result;
             score += (int)me;
@@ -30,13 +30,24 @@ C Z
 
         return score.ToString();
 
-        Plays Parse(char c)
+        Plays ParsePlay(char c)
         {
             return c switch
             {
-                'A' or 'X' => Plays.Rock,
-                'B' or 'Y' => Plays.Paper,
-                'C' or 'Z' => Plays.Scissors,
+                'A' => Plays.Rock,
+                'B' => Plays.Paper,
+                'C' => Plays.Scissors,
+                _ => throw new ArgumentException()
+            };
+        }
+
+        BattleResult ParseResult(char c)
+        {
+            return c switch
+            {
+                'X' => BattleResult.Lose,
+                'Y' => BattleResult.Draw,
+                'Z' => BattleResult.Win,
                 _ => throw new ArgumentException()
             };
         }
