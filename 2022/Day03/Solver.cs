@@ -11,23 +11,18 @@ PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw
-""") == "157");
+""") == "70");
     }
 
     public string Solve(string input)
     {
-        var rucksacks = input.Split(Environment.NewLine);
+        var rucksacks = input.Split(Environment.NewLine).Chunk(3);
 
         var result = 0;
 
-        foreach (var item in rucksacks)
+        foreach (var items in rucksacks)
         {
-            var mid = item.Length / 2;
-
-            var first = item[..mid];
-            var second = item[mid..];
-
-            var shared = first.Intersect(second).First();
+            var shared = items.Select(t => t.AsEnumerable()).Aggregate((a, b) => a.Intersect(b)).First();
 
             var score = 0;
             if (shared is >= 'a' and <= 'z')
