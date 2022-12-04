@@ -11,7 +11,7 @@ internal class Solver
 2-8,3-7
 6-6,4-6
 2-6,4-8
-""") == "2");
+""") == "4");
     }
 
     public string Solve(string input)
@@ -34,8 +34,7 @@ internal class Solver
 
         bool Overlap(Interval a, Interval b)
         {
-            return b.Start >= a.Start && b.Start <= b.End &&
-                b.End >= a.Start && b.End <= a.End;
+            return b.Start >= a.Start && b.Start <= a.End;
         }
     }
 }
