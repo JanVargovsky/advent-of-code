@@ -4,11 +4,12 @@ using TextCopy;
 const int year = 2022;
 var day = args.Length > 0 ? int.Parse(args[0]) : DateTime.UtcNow.Day;
 var dayFolder = $"Day{day:D2}";
-var solverType = Assembly.GetExecutingAssembly().GetType($"AdventOfCode.Year{year}.{dayFolder}.Solver");
-dynamic solver = Activator.CreateInstance(solverType);
+var solverType = Assembly.GetExecutingAssembly().GetType($"AdventOfCode.Year{year}.{dayFolder}.Solver")
+    ?? throw new ArgumentException("Solver not found.");
+dynamic solver = Activator.CreateInstance(solverType)!;
 
 var input = await GetOrDownloadInputAsync();
-var result = solver.Solve(input);
+var result = Convert.ToString(solver.Solve(input));
 Console.WriteLine(result);
 await ClipboardService.SetTextAsync(result);
 
@@ -18,7 +19,8 @@ async Task<string> GetOrDownloadInputAsync()
     if (!File.Exists(path))
     {
         const string AOCSESSION = "AOCSESSION";
-        var session = Environment.GetEnvironmentVariable(AOCSESSION) ?? throw new ArgumentException($"Env. variable '{AOCSESSION}' is missing.");
+        var session = Environment.GetEnvironmentVariable(AOCSESSION)
+            ?? throw new ArgumentException($"Env. variable '{AOCSESSION}' is missing.");
         using HttpClient httpClient = new();
         httpClient.DefaultRequestHeaders.Add("Cookie", $"session={session}");
         httpClient.DefaultRequestHeaders.UserAgent.Add(new("(github.com/JanVargovsky/advent-of-code by jan.vargovsky@gmail.com)"));
