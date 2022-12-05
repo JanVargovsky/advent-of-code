@@ -14,7 +14,7 @@ move 1 from 2 to 1
 move 3 from 1 to 3
 move 2 from 2 to 1
 move 1 from 1 to 2
-""") == "CMZ");
+""") == "MCD");
     }
 
     public string Solve(string input)
@@ -44,7 +44,13 @@ move 1 from 1 to 2
             for (int i = 0; i < rearrangement[0]; i++)
             {
                 var crate = crates[rearrangement[1] - 1].Pop();
-                crates[rearrangement[2] - 1].Push(crate);
+                stack.Push(crate);
+            }
+
+            while (stack.Count > 0)
+            {
+                var create = stack.Pop();
+                crates[rearrangement[2] - 1].Push(create);
             }
         }
 
