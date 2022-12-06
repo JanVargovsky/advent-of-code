@@ -6,24 +6,39 @@ internal class Solver
     {
         Debug.Assert(Solve("""
 mjqjpqmgbljsphdztnvjfqwrcgsmlb
-""") == 7);
+""", 4) == 7);
         Debug.Assert(Solve("""
 bvwbjplbgvbhsrlpgdmjqwftvncz
-""") == 5);
+""", 4) == 5);
         Debug.Assert(Solve("""
 nppdvjthqldpwncqszvftbrmjlhg
-""") == 6);
+""", 4) == 6);
         Debug.Assert(Solve("""
 nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg
-""") == 10);
+""", 4) == 10);
         Debug.Assert(Solve("""
 zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw
-""") == 11);
+""", 4) == 11);
+
+        Debug.Assert(Solve("""
+mjqjpqmgbljsphdztnvjfqwrcgsmlb
+""") == 19);
+        Debug.Assert(Solve("""
+bvwbjplbgvbhsrlpgdmjqwftvncz
+""") == 23);
+        Debug.Assert(Solve("""
+nppdvjthqldpwncqszvftbrmjlhg
+""") == 23);
+        Debug.Assert(Solve("""
+nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg
+""") == 29);
+        Debug.Assert(Solve("""
+zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw
+""") == 26);
     }
 
-    public int Solve(string input)
+    public int Solve(string input, int markerLength = 14)
     {
-        const int markerLength = 4;
         var i = markerLength;
         while (i < input.Length && input[(i - markerLength)..i].ToHashSet().Count != markerLength)
         {
