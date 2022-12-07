@@ -30,7 +30,7 @@ $ ls
 8033020 d.log
 5626152 d.ext
 7214296 k
-""") == 95437);
+""") == 24933642);
     }
 
     public long Solve(string input)
@@ -66,7 +66,14 @@ $ ls
             directory.CalculateTotalSize();
         }
 
-        var result = directories.Where(t => t.TotalSize <= 100000).Sum(t => t.TotalSize.Value);
+        var freeSpace = 70000000 - root.TotalSize;
+        var requiredSpaceToFree = 30000000 - freeSpace;
+
+        var candidates = directories
+            .Where(t => t.TotalSize >= requiredSpaceToFree)
+            .OrderBy(t => t.TotalSize);
+
+        var result = candidates.First().TotalSize.Value;
 
         return result;
 
