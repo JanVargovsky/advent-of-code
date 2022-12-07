@@ -25,7 +25,7 @@ async Task<string> GetOrDownloadInputAsync()
         httpClient.DefaultRequestHeaders.Add("Cookie", $"session={session}");
         httpClient.DefaultRequestHeaders.UserAgent.Add(new("(github.com/JanVargovsky/advent-of-code by jan.vargovsky@gmail.com)"));
         var input = await httpClient.GetStringAsync($"https://adventofcode.com/{year}/day/{day}/input");
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         // downloaded input is using Unix line ending, so we convert according to current OS
         await File.WriteAllTextAsync(path, string.Join(Environment.NewLine, input[..^1].Split("\n")));
     }

@@ -73,13 +73,13 @@ $ ls
             .Where(t => t.TotalSize >= requiredSpaceToFree)
             .OrderBy(t => t.TotalSize);
 
-        var result = candidates.First().TotalSize.Value;
+        var result = candidates.First().TotalSize!.Value;
 
         return result;
 
         void SetToRoot() => currentDirectory = root;
         void ParentDirectory() => currentDirectory = currentDirectory.Parent;
-        void ChangeDirectory(string arg) => currentDirectory = currentDirectory.Files[arg]!;
+        void ChangeDirectory(string arg) => currentDirectory = currentDirectory.Files![arg];
         void AddDirectory(string arg) => currentDirectory.AddDirectory(arg);
         void List(string[] output)
         {
@@ -118,7 +118,7 @@ file record File(int Size, string Name, bool IsDirectory, File? Parent)
     }
 
     public IEnumerable<File> GetAllRecursiveFiles() =>
-        MoreEnumerable.TraverseBreadthFirst(this, t => t.IsDirectory ? t.Files.Values : Enumerable.Empty<File>());
+        MoreEnumerable.TraverseBreadthFirst(this, t => t.IsDirectory ? t.Files!.Values : Enumerable.Empty<File>());
 
     public long CalculateTotalSize()
     {
