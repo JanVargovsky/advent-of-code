@@ -10,56 +10,55 @@ internal class Solver
 65332
 33549
 35390
-""") == 21);
+""") == 8);
     }
 
     public int Solve(string input)
     {
         var grid = new Grid(input.Split(Environment.NewLine));
-        var visible = new HashSet<Coords>();
 
+        var scenicScore = 0;
         for (int x = 0; x < grid.MaxX; x++)
-        {
-            // left
-            var row = grid.GetRow(x).ToArray();
-            foreach (var item in GetVisible(row))
-                visible.Add(item);
-            // right
-            Array.Reverse(row);
-            foreach (var item in GetVisible(row))
-                visible.Add(item);
-        }
-
-        for (int y = 0; y < grid.MaxY; y++)
-        {
-            // top
-            var column = grid.GetColumn(y).ToArray();
-            foreach (var item in GetVisible(column))
-                visible.Add(item);
-            // bottom
-            Array.Reverse(column);
-            foreach (var item in GetVisible(column))
-                visible.Add(item);
-        }
-
-        var result = visible.Count;
-        return result;
-
-        IEnumerable<Coords> GetVisible(IList<Tree> trees)
-        {
-            var currentMax = trees[0];
-            yield return currentMax.Coords;
-
-            for (int i = 1; i < trees.Count - 1; i++)
+            for (int y = 0; y < grid.MaxY; y++)
             {
-                if (trees[i].Height > currentMax.Height)
-                {
-                    currentMax = trees[i];
-                    yield return trees[i].Coords;
-                }
+                scenicScore = Math.Max(scenicScore, ScenicScore(x, y));
             }
 
-            yield return trees[^1].Coords;
+        return scenicScore;
+
+        int ScenicScore(int x, int y)
+        {
+            var row = grid.GetRow(x).ToArray();
+            var column = grid.GetColumn(y).ToArray();
+
+            var left = row[..(y + 1)].Reverse().ToArray();
+            var right = row[y..];
+            var top = column[..(x + 1)].Reverse().ToArray();
+            var bottom = column[x..];
+
+            var leftVisible = GetVisible(left);
+            var rightVisible = GetVisible(right);
+            var topVisible = GetVisible(top);
+            var bottomVisible = GetVisible(bottom);
+
+            return leftVisible.Count() *
+                rightVisible.Count() *
+                topVisible.Count() *
+                bottomVisible.Count();
+        }
+
+        IEnumerable<Tree> GetVisible(IList<Tree> trees)
+        {
+            if (trees.Count < 1) yield break;
+            var me = trees[0];
+
+            for (int i = 1; i < trees.Count; i++)
+            {
+                yield return trees[i];
+                if (trees[i].Height >= me.Height)
+                    yield break;
+
+            }
         }
     }
 }
