@@ -18,8 +18,8 @@ internal class Solver
         var grid = new Grid(input.Split(Environment.NewLine));
 
         var scenicScore = 0;
-        for (int x = 0; x < grid.MaxX; x++)
-            for (int y = 0; y < grid.MaxY; y++)
+        for (int x = 1; x < grid.MaxX - 1; x++)
+            for (int y = 1; y < grid.MaxY - 1; y++)
             {
                 scenicScore = Math.Max(scenicScore, ScenicScore(x, y));
             }
@@ -49,7 +49,6 @@ internal class Solver
 
         IEnumerable<Tree> GetVisible(IList<Tree> trees)
         {
-            if (trees.Count < 1) yield break;
             var me = trees[0];
 
             for (int i = 1; i < trees.Count; i++)
@@ -57,7 +56,6 @@ internal class Solver
                 yield return trees[i];
                 if (trees[i].Height >= me.Height)
                     yield break;
-
             }
         }
     }
