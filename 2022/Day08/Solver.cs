@@ -36,27 +36,25 @@ internal class Solver
             var top = column[..(x + 1)].Reverse().ToArray();
             var bottom = column[x..];
 
-            var leftVisible = GetVisible(left);
-            var rightVisible = GetVisible(right);
-            var topVisible = GetVisible(top);
-            var bottomVisible = GetVisible(bottom);
+            var leftVisible = MeasureViewingDistance(left);
+            var rightVisible = MeasureViewingDistance(right);
+            var topVisible = MeasureViewingDistance(top);
+            var bottomVisible = MeasureViewingDistance(bottom);
 
-            return leftVisible.Count() *
-                rightVisible.Count() *
-                topVisible.Count() *
-                bottomVisible.Count();
+            return leftVisible * rightVisible * topVisible * bottomVisible;
         }
 
-        IEnumerable<Tree> GetVisible(IList<Tree> trees)
+        int MeasureViewingDistance(IList<Tree> trees)
         {
             var me = trees[0];
 
             for (int i = 1; i < trees.Count; i++)
             {
-                yield return trees[i];
                 if (trees[i].Height >= me.Height)
-                    yield break;
+                    return i;
             }
+
+            return trees.Count - 1;
         }
     }
 }
