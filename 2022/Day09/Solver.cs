@@ -13,7 +13,7 @@ R 4
 D 1
 L 5
 R 2
-""") == 13);
+""") == 1);
     }
 
     public int Solve(string input)
@@ -21,8 +21,8 @@ R 2
         var motions = input.Split(Environment.NewLine);
         var visited = new HashSet<Point>();
         var head = new Point(0, 0);
-        var tail = new Point(0, 0);
-        visited.Add(tail);
+        var knots = new Point[9];
+        visited.Add(knots[^1]);
 
         var directions = new Dictionary<string, Point>()
         {
@@ -39,35 +39,46 @@ R 2
             var steps = int.Parse(tokens[1]);
             var direction = directions[nameOfDirection];
 
-            for (int i = 0; i < steps; i++)
+            for (int s = 0; s < steps; s++)
             {
                 head.X += direction.X;
                 head.Y += direction.Y;
 
-                if (!AreAdjacent(head, tail))
+                MoveIfNotAdjacent(head, ref knots[0]);
+
+                for (int i = 0; i < knots.Length - 1; i++)
                 {
-                    MoveTail();
-                    Debug.Assert(AreAdjacent(head, tail));
-                    visited.Add(tail);
+                    MoveIfNotAdjacent(knots[i], ref knots[i + 1]);
                 }
+
+                visited.Add(knots[^1]);
             }
 
         }
 
         return visited.Count;
 
-        void MoveTail()
+        void MoveIfNotAdjacent(Point a, ref Point b)
         {
-            var x = head.X - tail.X;
+            if (!AreAdjacent(a, b))
+            {
+                Move(a, ref b);
+                Debug.Assert(AreAdjacent(a, b));
+            }
+        }
+
+        void Move(Point a, ref Point b)
+        {
+            var x = a.X - b.X;
             if (x > 1) x = 1;
             else if (x < -1) x = -1;
 
-            var y = head.Y - tail.Y;
+            var y = a.Y - b.Y;
             if (y > 1) y = 1;
             else if (y < -1) y = -1;
 
-            tail.X += x;
-            tail.Y += y;
+            b.X += x;
+            b.Y += y;
         }
 
         bool AreAdjacent(Point a, Point b)
