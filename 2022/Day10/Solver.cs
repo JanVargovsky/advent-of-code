@@ -1,15 +1,11 @@
-﻿namespace AdventOfCode.Year2022.Day10;
+﻿using System.Text;
+
+namespace AdventOfCode.Year2022.Day10;
 
 internal class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve("""
-noop
-addx 3
-addx -5
-""") == 0);
-
         Debug.Assert(Solve("""
 addx 15
 addx -11
@@ -157,15 +153,23 @@ addx -11
 noop
 noop
 noop
-""") == 13140);
+""") == """
+##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....
+""");
     }
 
-    public int Solve(string input)
+    public string Solve(string input)
     {
         var instructions = input.Split(Environment.NewLine);
 
         var memory = new Memory();
-        var result = 0;
+        var crt = new StringBuilder();
+        const int wide = 40;
         var cycles = 1;
 
         var pipeline = new LinkedList<Instruction>();
@@ -194,20 +198,19 @@ noop
             DoCycle();
         }
 
+        var result = string.Join(Environment.NewLine, crt.ToString().Chunk(wide).Select(t => new string(t)));
         return result;
 
-        void CheckSignalStrength()
+        void PrintCrt()
         {
-            if (cycles % 40 == 20)
-            {
-                var signalStrength = cycles * memory.X;
-
-                result += signalStrength;
-            }
+            var position = crt.Length % wide;
+            var pixel = memory.X - 1 <= position && memory.X + 1 >= position ? '#' : '.';
+            crt.Append(pixel);
         }
 
         void DoCycle()
         {
+            PrintCrt();
             cycles++;
             var toRemove = new List<LinkedListNode<Instruction>>();
 
@@ -223,7 +226,6 @@ noop
 
             toRemove.ForEach(pipeline.Remove);
 
-            CheckSignalStrength();
         }
     }
 }
