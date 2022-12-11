@@ -32,16 +32,20 @@ Monkey 3:
   Test: divisible by 17
     If true: throw to monkey 0
     If false: throw to monkey 1
-""") == 10605);
+""") == 2713310158);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
         var segments = input.Split(Environment.NewLine + Environment.NewLine);
-
         var monkeys = segments.Select(Parse).ToArray();
+        var mod = 1;
+        foreach (var item in monkeys)
+        {
+            mod *= item.DivisibleTest;
+        }
 
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 10000; i++)
         {
             for (int m = 0; m < monkeys.Length; m++)
             {
@@ -49,7 +53,7 @@ Monkey 3:
                 foreach (var item in monkey.Items)
                 {
                     var operationResult = EvaluateOperation(monkey.Operation, item);
-                    var newItem = operationResult / 3;
+                    var newItem = operationResult % mod;
                     var operationTestResult = newItem % monkey.DivisibleTest == 0;
                     monkeys[operationTestResult ? monkey.TestResultTrue : monkey.TestResultFalse].Items.Add(newItem);
                     monkey.Inspects++;
@@ -95,5 +99,5 @@ Monkey 3:
 
 public record class Monkey(List<long> Items, string Operation, int DivisibleTest, int TestResultTrue, int TestResultFalse)
 {
-    public int Inspects { get; set; }
+    public long Inspects { get; set; }
 }
