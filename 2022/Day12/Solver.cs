@@ -10,7 +10,7 @@ abcryxxl
 accszExk
 acctuvwj
 abdefghi
-""") == 31);
+""") == 29);
     }
 
     public int Solve(string input)
@@ -22,9 +22,8 @@ abdefghi
 
         const char S = 'S';
         const char E = 'E';
-        var start = Find(S);
         var end = Find(E);
-        var result = Search(start, end);
+        var result = FindAll('a').Append(Find(S)).Select(start => Search(start, end)).Min();
 
         return result;
 
@@ -60,7 +59,7 @@ abdefghi
                 }
             }
 
-            return -1;
+            return int.MaxValue;
         }
 
         char GetHeight(int x, int y) => map[y][x] switch
@@ -100,6 +99,18 @@ abdefghi
             }
 
             throw new Exception();
+        }
+
+        IEnumerable<Point> FindAll(char c)
+        {
+            for (int x = 0; x < map[0].Length; x++)
+            {
+                for (int y = 0; y < map.Length; y++)
+                {
+                    Debug.Assert(IsValid(x, y));
+                    if (map[y][x] == c) yield return new(x, y);
+                }
+            }
         }
     }
 }
