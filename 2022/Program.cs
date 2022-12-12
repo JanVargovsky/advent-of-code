@@ -3,7 +3,7 @@ using TextCopy;
 
 const int year = 2022;
 var day = args.Length > 0 ? int.Parse(args[0]) : DateTime.UtcNow.Day;
-var dayFolder = $"Day{day:D2}";
+var dayFolder = GetDayFolder(day);
 var solverType = Assembly.GetExecutingAssembly().GetType($"AdventOfCode.Year{year}.{dayFolder}.Solver")
     ?? throw new ArgumentException("Solver not found.");
 dynamic solver = Activator.CreateInstance(solverType)!;
@@ -31,4 +31,48 @@ async Task<string> GetOrDownloadInputAsync()
     }
 
     return await File.ReadAllTextAsync(path);
+}
+
+string GetDayFolder(int day) => $"Day{day:D2}";
+
+async Task CreateSolverStructureAsync(string projectPath)
+{
+    const string dayFolderVariable = "<DayFolder>";
+    const string template = $$""""
+namespace AdventOfCode.Year2022.{{dayFolderVariable}};
+
+internal class Solver
+{
+    public Solver()
+    {
+        Debug.Assert(Solve("""
+
+""") == "");
+    }
+
+    public string Solve(string input)
+    {
+        var rows = input.Split(Environment.NewLine);
+        var result = string.Empty;
+        return result;
+    }
+}
+"""";
+    const int from = 1;
+    const int to = 25;
+    for (int day = from; day <= to; day++)
+    {
+        var dayFolder = $"Day{day:D2}";
+        var directoryPath = Path.Combine(projectPath, dayFolder);
+        const string fileName = "Solver.cs";
+        var filePath = Path.Combine(directoryPath, fileName);
+
+        if (!File.Exists(filePath))
+        {
+            _ = Directory.CreateDirectory(directoryPath);
+            var content = template.Replace(dayFolderVariable, dayFolder);
+            Console.WriteLine($"Creating {day}");
+            await File.WriteAllTextAsync(filePath, content);
+        }
+    }
 }
