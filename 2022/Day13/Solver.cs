@@ -28,24 +28,30 @@ internal class Solver
 
 [1,[2,[3,[4,[5,6,7]]]],8,9]
 [1,[2,[3,[4,[5,6,0]]]],8,9]
-""") == 13);
+""") == 140);
     }
 
     public int Solve(string input)
     {
         var pairs = input.Split(Environment.NewLine + Environment.NewLine);
-
-        var result = 0;
+        var packets = new List<Packet>();
+        var divider1 = ParsePacket("[[2]]");
+        packets.Add(divider1);
+        var divider2 = ParsePacket("[[6]]");
+        packets.Add(divider2);
 
         for (int i = 0; i < pairs.Length; i++)
         {
             var rows = pairs[i].Split(Environment.NewLine);
-            if (Compare(rows[0], rows[1]))
-            {
-                result += (i + 1);
-            }
+            packets.Add(ParsePacket(rows[0]));
+            packets.Add(ParsePacket(rows[1]));
         }
 
+        packets.Sort(Compare);
+
+        var di1 = packets.IndexOf(divider1) + 1;
+        var di2 = packets.IndexOf(divider2) + 1;
+        var result = di1 * di2;
         return result;
     }
 
