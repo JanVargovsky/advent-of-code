@@ -32,7 +32,7 @@ internal class Solver
         var i = 1;
         while (DropSand())
         {
-            Console.WriteLine(i);
+            //Console.WriteLine(i);
             i++;
         }
 
