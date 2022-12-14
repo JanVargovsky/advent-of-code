@@ -10,7 +10,7 @@ internal class Solver
         Debug.Assert(Solve("""
 498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9
-""") == 24);
+""") == 93);
     }
 
     public int Solve(string input)
@@ -19,7 +19,8 @@ internal class Solver
         var cave = new Dictionary<Point, Tile>();
         var minRocks = new Dictionary<int, int>();
         LoadRocks();
-        //Render(494, 503, 0, 9);
+        AddFloor();
+        //Render(484, 513, 0, 11);
         LoadAbyssBounds();
         var start = new Point(500, 0);
         var directions = new[] {
@@ -32,13 +33,23 @@ internal class Solver
         while (DropSand())
         {
             Console.WriteLine(i);
-            //Render(494, 503, 0, 9);
             i++;
         }
 
-        //Render(493, 503, 0, 13);
+        //Render(484, 513, 0, 11);
         var result = cave.Values.Count(t => t is Tile.Sand);
         return result;
+
+        void AddFloor()
+        {
+            var maxY = cave.Max(t => t.Key.Y);
+            var y = maxY + 2;
+
+            for (int x = 500 - y; x <= 500 + y; x++)
+            {
+                cave[new Point(x, y)] = Tile.Rock;
+            }
+        }
 
         void Render(int minX, int maxX, int minY, int maxY)
         {
@@ -74,7 +85,9 @@ internal class Solver
 
             for (int x = minX; x <= maxX; x++)
             {
-                minRocks[x] = cave.Where(t => t.Key.X == x).Max(t => t.Key.Y);
+                var rocks = cave.Where(t => t.Key.X == x).ToArray();
+                if (rocks.Any())
+                    minRocks[x] = rocks.Max(t => t.Key.Y);
             }
         }
 
@@ -107,12 +120,12 @@ internal class Solver
                     break;
             }
 
+            cave[sand] = Tile.Sand;
+
             if (sand == start)
             {
                 return false;
             }
-
-            cave[sand] = Tile.Sand;
             return true;
         }
 
