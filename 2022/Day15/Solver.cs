@@ -45,7 +45,7 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3
             var sensor = new Point(int.Parse(tokens[1]), int.Parse(tokens[3]));
             var beacon = new Point(int.Parse(tokens[5]), int.Parse(tokens[7]));
             return (sensor, beacon);
-        });
+        }).ToArray();
 
         for (int y = 0; y <= limit; y++)
         {
