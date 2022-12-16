@@ -38,8 +38,11 @@ Valve JJ has flow rate=21; tunnel leads to valve II
         }
 
         var distances = FloydWarshall(nodes, edges);
+        const string start = "AA";
+        var removeUselessNodes = nodes.Where(t => t.Key != start && flowRates[t.Key] == 0).ToList();
+        removeUselessNodes.ForEach(t => nodes.Remove(t.Key));
         var queue = new PriorityQueue<State, int>(Comparer<int>.Create((a, b) => b.CompareTo(a)));
-        queue.Enqueue(new State { Node = "AA", Minute = 0, OpenValves = new() }, 0);
+        queue.Enqueue(new State { Node = start, Minute = 0, OpenValves = new() }, 0);
         var memory = new Dictionary<State, int>();
 
         const int minutes = 30;
@@ -48,7 +51,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II
         {
             var nexts = nodes
                 .Where(t => !state.OpenValves.Contains(t.Key))
-                .Where(t => flowRates[t.Key] > 0)
+                //.Where(t => flowRates[t.Key] > 0)
                 .Select(next =>
                 {
                     var d = distances[nodes[state.Node], next.Value];
@@ -56,7 +59,6 @@ Valve JJ has flow rate=21; tunnel leads to valve II
                 })
                 .Where(t => t.Distance < minutes - state.Minute)
                 .ToArray();
-
 
             if (nexts.Length == 0)
             {
