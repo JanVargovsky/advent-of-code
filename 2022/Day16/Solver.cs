@@ -15,7 +15,7 @@ Valve GG has flow rate=0; tunnels lead to valves FF, HH
 Valve HH has flow rate=22; tunnel leads to valve GG
 Valve II has flow rate=0; tunnels lead to valves AA, JJ
 Valve JJ has flow rate=21; tunnel leads to valve II
-""") == 1651);
+""") == 1707);
     }
 
     public int Solve(string input)
@@ -41,11 +41,43 @@ Valve JJ has flow rate=21; tunnel leads to valve II
         const string start = "AA";
         var removeUselessNodes = nodes.Where(t => t.Key != start && flowRates[t.Key] == 0).ToList();
         removeUselessNodes.ForEach(t => nodes.Remove(t.Key));
+        const int minutes = 30;
+        const int minutesWithElephant = 26;
+        var startIndex = nodes[start];
+
+        var result = Calculate(start, nodes, flowRates, distances, minutes);
+        Console.WriteLine($"Starting with {result}");
+        for (int i = 1; i <= nodes.Count / 2; i++)
+        {
+            Console.WriteLine($"Iterating subsets of size {i}");
+            foreach (var elephantSubset in MoreLinq.MoreEnumerable.Subsets(nodes, i))
+            {
+                var myNodes = new Dictionary<string, int>(nodes.Except(elephantSubset));
+                var elephantNodes = new Dictionary<string, int>(elephantSubset);
+                myNodes[start] = startIndex;
+                elephantNodes[start] = startIndex;
+                var me = Calculate(start, myNodes, flowRates, distances, minutesWithElephant);
+                var elephant = Calculate(start, elephantNodes, flowRates, distances, minutesWithElephant);
+
+                var total = me + elephant;
+
+                if (total > result)
+                {
+                    Console.WriteLine($"New better solution found, old={result}, new={total}");
+                    result = total;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private int Calculate(string start, Dictionary<string, int> nodes, Dictionary<string, int> flowRates, int[,] distances, int minutes)
+    {
         var queue = new PriorityQueue<State, int>(Comparer<int>.Create((a, b) => b.CompareTo(a)));
         queue.Enqueue(new State { Node = start, Minute = 0, OpenValves = new() }, 0);
         var memory = new Dictionary<State, int>();
 
-        const int minutes = 30;
         var best = 0;
         while (queue.TryDequeue(out var state, out var pressure))
         {
