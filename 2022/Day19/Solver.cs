@@ -16,7 +16,7 @@ Blueprint 2:
   Each clay robot costs 3 ore.
   Each obsidian robot costs 3 ore and 8 clay.
   Each geode robot costs 3 ore and 12 obsidian.
-""") == 33);
+""") == 56 * 62);
     }
 
     public int Solve(string input)
@@ -24,12 +24,12 @@ Blueprint 2:
         var rows = input.Split(new string[] { Environment.NewLine, ":", "Each" },
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        var blueprints = rows.Chunk(5).Select(Parse).ToArray();
+        var blueprints = rows.Chunk(5).Select(Parse).Take(3).ToArray();
         var tasks = blueprints.Select(t => Task.Run(() => Calculate(t))).ToArray();
         Task.WaitAll(tasks);
         var results = tasks.Select(t => t.Result).ToArray();
-
-        var result = results.Sum();
+        Console.WriteLine(string.Join(", ", results));
+        var result = results.Aggregate(1, (a, b) => a * b);
         return result;
 
         int Calculate(Blueprint blueprint)
@@ -39,50 +39,71 @@ Blueprint 2:
             var maxClayNeeded = robots.Max(t => t.Clay);
             var maxObsidianNeeded = robots.Max(t => t.Obsidian);
 
-            const int minutes = 24;
+            const int minutes = 32;
             var best = 0;
-            var queue = new Queue<State>();
+            var queue = new Stack<State>();
             var initial = new State(0, new(0, 1), new(0, 0), new(0, 0), new(0, 0));
-            queue.Enqueue(initial);
+            queue.Push(initial);
             var visited = new HashSet<State>();
-            while (queue.TryDequeue(out var state))
+            while (queue.TryPop(out var state))
             {
+                best = Math.Max(best, state.Geode.Count);
+
                 if (state.Minute == minutes)
                 {
-                    best = Math.Max(best, state.Geode.Count);
                     continue;
                 }
+
+                if (best > CalculatePotential(state))
+                    continue;
 
                 var oldState = state;
                 state = Collect(state);
                 if (!visited.Add(state))
                     continue;
 
-                queue.Enqueue(state);
+                if (visited.Count % 1000000 == 0)
+                {
+                    Console.WriteLine($"Blueprint {blueprint.Number} tested {visited.Count}");
+                }
 
-                if (state.Ore.RobotCount < maxOreNeeded && CanAfford(oldState, blueprint.OreRobot))
-                {
-                    var newState = BuyRobot(state, blueprint.OreRobot, isOre: true);
-                    queue.Enqueue(newState);
-                }
-                if (state.Clay.RobotCount < maxClayNeeded && CanAfford(oldState, blueprint.ClayRobot))
-                {
-                    var newState = BuyRobot(state, blueprint.ClayRobot, isClay: true);
-                    queue.Enqueue(newState);
-                }
-                if (state.Obsidian.RobotCount < maxObsidianNeeded && CanAfford(oldState, blueprint.ObsidianRobot))
-                {
-                    var newState = BuyRobot(state, blueprint.ObsidianRobot, isObsidian: true);
-                    queue.Enqueue(newState);
-                }
+                queue.Push(state);
+
                 if (CanAfford(oldState, blueprint.GeodeRobot))
                 {
                     var newState = BuyRobot(state, blueprint.GeodeRobot, isGeode: true);
-                    queue.Enqueue(newState);
+                    queue.Push(newState);
+                }
+                else
+                {
+                    if (state.Ore.RobotCount < maxOreNeeded && CanAfford(oldState, blueprint.OreRobot))
+                    {
+                        var newState = BuyRobot(state, blueprint.OreRobot, isOre: true);
+                        queue.Push(newState);
+                    }
+                    if (state.Clay.RobotCount < maxClayNeeded && CanAfford(oldState, blueprint.ClayRobot))
+                    {
+                        var newState = BuyRobot(state, blueprint.ClayRobot, isClay: true);
+                        queue.Push(newState);
+                    }
+                    if (state.Obsidian.RobotCount < maxObsidianNeeded && CanAfford(oldState, blueprint.ObsidianRobot))
+                    {
+                        var newState = BuyRobot(state, blueprint.ObsidianRobot, isObsidian: true);
+                        queue.Push(newState);
+                    }
                 }
             }
 
-            return best * blueprint.Number;
+            return best;
+
+            int CalculatePotential(State state)
+            {
+                var remaining = minutes - state.Minute;
+                var currentTillEnd = state.Geode.Count + state.Geode.RobotCount * remaining;
+                var newTillEnd = remaining * (remaining + 1) / 2;
+                var result = currentTillEnd + newTillEnd;
+                return result;
+            }
 
             State Collect(State state)
             {
