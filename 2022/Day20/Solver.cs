@@ -14,12 +14,13 @@ internal class Solver
 -2
 0
 4
-""") == 3);
+""") == 1623178306);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
-        var items = new LinkedList<int>(input.Split(Environment.NewLine).Select(int.Parse));
+        const long decryptionKey = 811589153;
+        var items = new LinkedList<long>(input.Split(Environment.NewLine).Select(int.Parse).Select(t => t * decryptionKey));
         var nodes = GetNodes(items).ToArray();
 
         if (debugPrint)
@@ -28,23 +29,26 @@ internal class Solver
             DebugWrite(string.Join(", ", items));
         }
 
-        foreach (var node in nodes)
+        for (int i = 0; i < 10; i++)
         {
-            var nextNode = node.Next ?? items.First!;
-            items.Remove(node);
-
-            nextNode = GetItem(nextNode, node.Value);
-
-            items.AddBefore(nextNode, node);
-
-            if (debugPrint)
+            foreach (var node in nodes)
             {
-                var left = (node.Previous ?? items.Last!).Value;
-                var right = (node.Next ?? items.First!).Value;
+                var nextNode = node.Next ?? items.First!;
+                items.Remove(node);
 
-                DebugWrite();
-                DebugWrite($"{node.Value} moves between {left} and {right}:");
-                DebugWrite(string.Join(", ", items));
+                nextNode = GetItem(nextNode, node.Value);
+
+                items.AddBefore(nextNode, node);
+
+                if (debugPrint)
+                {
+                    var left = (node.Previous ?? items.Last!).Value;
+                    var right = (node.Next ?? items.First!).Value;
+
+                    DebugWrite();
+                    DebugWrite($"{node.Value} moves between {left} and {right}:");
+                    DebugWrite(string.Join(", ", items));
+                }
             }
         }
 
@@ -54,7 +58,7 @@ internal class Solver
         var result = resultItemValues.Sum();
         return result;
 
-        LinkedListNode<int> GetItem(LinkedListNode<int> from, int offset)
+        LinkedListNode<long> GetItem(LinkedListNode<long> from, long offset)
         {
             var n = items.Count;
             offset %= n;
