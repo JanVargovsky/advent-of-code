@@ -42,8 +42,42 @@ hmdt: 32
             }
         }
 
+        var expressionResults = results.ToDictionary(t => t.Key, t => (object)t.Value);
+        expressionResults["humn"] = "x";
+        var (a, b, _) = calculations["root"];
+        var left = ToExpression(a);
+        var right = ToExpression(b);
+
+        Console.WriteLine($"{left} = {right}");
+
         var result = Calculate("root");
         return result;
+
+        object ToExpression(string name)
+        {
+            if (expressionResults.TryGetValue(name, out var result))
+                return result;
+
+            var calculation = calculations[name];
+            var aExpression = ToExpression(calculation.A);
+            var bExpression = ToExpression(calculation.B);
+
+            if (aExpression is long a && bExpression is long b)
+                result = calculation.Operation switch
+                {
+                    '+' => a + b,
+                    '-' => a - b,
+                    '*' => a * b,
+                    '/' => a / b,
+                    _ => throw new InvalidOperationException(),
+                };
+            else
+            {
+                result = $"({aExpression}){calculation.Operation}({bExpression})";
+            }
+            expressionResults[name] = result;
+            return result;
+        }
 
         long Calculate(string name)
         {
