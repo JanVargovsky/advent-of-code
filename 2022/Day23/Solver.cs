@@ -7,14 +7,6 @@ internal class Solver
     public Solver()
     {
         Debug.Assert(Solve("""
-.....
-..##.
-..#..
-.....
-..##.
-.....
-""") == 25);
-        Debug.Assert(Solve("""
 ..............
 ..............
 .......#......
@@ -27,7 +19,7 @@ internal class Solver
 ..............
 ..............
 ..............
-""") == 110);
+""") == 20);
     }
 
     public int Solve(string input)
@@ -67,7 +59,8 @@ internal class Solver
         Console.WriteLine("Initial");
         Render();
 
-        for (int i = 1; i <= 10; i++)
+        int round = 1;
+        while (true)
         {
             var newPoints = ApplyRound();
             var moved = false;
@@ -89,9 +82,12 @@ internal class Solver
             rules.RemoveAt(0);
             rules.Add(currentFirstRule);
 
-            Console.WriteLine($"End of Round {i}");
-            Render();
+            Console.WriteLine($"End of Round {round}");
+            //Render();
+            round++;
         }
+
+        return round;
 
         var totalSize = GetRectangleSize();
         var result = totalSize - points.Count;
