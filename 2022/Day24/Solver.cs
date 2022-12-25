@@ -14,7 +14,7 @@ internal class Solver
 #>v.><>#
 #<^v^^>#
 ######.#
-""") == 18);
+""") == 54);
     }
 
     public int Solve(string input)
@@ -29,22 +29,24 @@ internal class Solver
         var start = new Point(map[0].IndexOf('.'), 0);
         var end = new Point(map[^1].IndexOf('.'), map.Length - 1);
 
-        var result = CalculatePath(start, end);
-        return result;
+        var path1 = CalculatePath(start, end, 0);
+        var path2 = CalculatePath(end, start, path1);
+        var path3 = CalculatePath(start, end, path1 + path2);
+        return path1 + path2 + path3;
 
-        int CalculatePath(Point start, Point end)
+        int CalculatePath(Point start, Point end, int initialMinute)
         {
             var q = new Queue<State>();
             var visited = new HashSet<State>();
-            var initialState = new State(0, start);
-            q.Enqueue((initialState));
+            var initialState = new State(initialMinute, start);
+            q.Enqueue(initialState);
             visited.Add(initialState);
 
             while (q.TryDequeue(out var state))
             {
                 var (minute, me) = state;
                 if (me == end)
-                    return minute - 1;
+                    return minute - 1 - initialMinute;
 
                 var newBlizzardPoints = blizzardPoints[minute % blizzardPoints.Count];
 
