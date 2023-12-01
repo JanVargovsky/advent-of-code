@@ -24,9 +24,11 @@ zoneight234
         foreach (var row in rows)
         {
             var first = Find(row);
+            Debug.Assert(first >= 0);
             var last = FindLast(row);
+            Debug.Assert(last >= 0);
 
-            var number = Convert.ToInt32($"{first}{last}");
+            var number = first * 10 + last;
             result += number;
         }
         return result;
