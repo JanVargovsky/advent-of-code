@@ -10,19 +10,13 @@ Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
-""") == 8);
+""") == 2286);
     }
 
     public int Solve(string input)
     {
-        GameSet gameSet = new(new()
-        {
-            ["red"] = 12,
-            ["green"] = 13,
-            ["blue"] = 14,
-        });
         var games = input.Split(Environment.NewLine).Select(Parse);
-        var result = games.Where(t => t.IsPossible(gameSet)).Sum(t => t.Id);
+        var result = games.Select(t => t.GetFewestRequiredGameSet()).Sum(t => t.Data.Aggregate(1, (acc, v) => acc * v.Value));
         return result;
 
         Game Parse(string row)
@@ -52,6 +46,16 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
     {
         public bool IsPossible(GameSet gameSet) =>
             Sets.All(t => t.IsPossible(gameSet));
+
+        public GameSet GetFewestRequiredGameSet()
+        {
+            var data = Sets
+                .SelectMany(t => t.Data)
+                .GroupBy(t => t.Key, t => t)
+                .Select(t => t.MaxBy(t => t.Value))
+                .ToDictionary();
+            return new(data);
+        }
     }
 
     private record GameSet(Dictionary<string, int> Data)
