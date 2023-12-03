@@ -15,7 +15,7 @@ internal class Solver
 ......755.
 ...$.*....
 .664.598..
-""") == 4361);
+""") == 467835);
     }
 
     public int Solve(string input)
@@ -41,16 +41,27 @@ internal class Solver
                 }
             }
         }
-        var result = numbers.Where(HasAdjacentSymbol).Sum(t => t.Value);
+
+        var numberToGears = numbers.ToDictionary(t => t, GetAdjacentGearPoints);
+        Dictionary<Point2d, List<Number>> gearToNumbers = [];
+        foreach (var (number, gears) in numberToGears)
+        {
+            foreach (var gear in gears)
+            {
+                if (!gearToNumbers.TryGetValue(gear, out var gearNumbers))
+                    gearToNumbers[gear] = gearNumbers = [];
+                gearNumbers.Add(number);
+
+            }
+        }
+        var result = gearToNumbers
+            .Where(t => t.Value.Count == 2)
+            .Sum(t => t.Value[0].Value * t.Value[1].Value);
         return result;
 
-        bool HasAdjacentSymbol(Number n)
+        Point2d[] GetAdjacentGearPoints(Number n)
         {
-            return GetNeightborPoints(n).Where(IsValid).Any(p =>
-            {
-                var c = rows[p.Row][p.Column];
-                return !char.IsDigit(c) && c != '.';
-            });
+            return GetNeightborPoints(n).Where(IsValid).Where(p => rows[p.Row][p.Column] == '*').ToArray();
         }
 
         bool IsValid(Point2d p) =>
