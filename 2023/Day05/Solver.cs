@@ -40,26 +40,41 @@ temperature-to-humidity map:
 humidity-to-location map:
 60 56 37
 56 93 4
-""") == 35);
+""") == 46);
     }
 
     public long Solve(string input)
     {
         var segments = input.Split(Environment.NewLine + Environment.NewLine);
-        var seeds = segments[0]["seeds: ".Length..].Split(' ').Select(long.Parse).ToArray();
+        var seedRanges = segments[0]["seeds: ".Length..].Split(' ').Select(long.Parse).ToArray();
         var maps = segments[1..].Select(ParseMap).ToArray();
 
-        var results = seeds.ToArray();
-        foreach (var map in maps)
+        var ranges = new List<Range>();
+        for (int i = 0; i < seedRanges.Length; i += 2)
         {
-            for (int i = 0; i < results.Length; i++)
-            {
-                results[i] = map.MapValue(results[i]);
-            }
+            ranges.Add(new(seedRanges[i], seedRanges[i] + seedRanges[i + 1] - 1));
         }
 
-        var result = results.Min();
+        var min = 0;
+        while (true)
+        {
+            var destination = MapDestinationInReverse(min);
+            if (ranges.Any(r => r.IsInRange(destination)))
+            {
+                break;
+            }
+            min++;
+        }
+
+        var result = min;
         return result;
+
+        long MapDestinationInReverse(long value)
+        {
+            for (int i = maps.Length - 1; i >= 0; i--)
+                value = maps[i].MapDestinationValue(value);
+            return value;
+        }
     }
 
     private Map ParseMap(string map)
@@ -67,7 +82,7 @@ humidity-to-location map:
         var lines = map.Split(Environment.NewLine);
         var fromTo = lines[0].Split(["-to-", " "], StringSplitOptions.None);
         var ranges = lines[1..].Select(ParseRange)
-            //.OrderBy(t => t.SourceRangeStart) // we can sort it & search mapping using binary search
+            .OrderBy(t => t.SourceRangeStart)
             .ToArray();
         return new(fromTo[0], fromTo[1], ranges);
 
@@ -92,6 +107,19 @@ humidity-to-location map:
 
             return source;
         }
+
+        public long MapDestinationValue(long destination)
+        {
+            foreach (var range in Ranges)
+            {
+                if (range.TryGetSourceValue(destination, out var result))
+                {
+                    return result.Value;
+                }
+            }
+
+            return destination;
+        }
     }
 
     private record MappingRange(long DestinationRangeStart, long SourceRangeStart, long RangeLength)
@@ -99,7 +127,7 @@ humidity-to-location map:
         public bool TryGetValue(long source, [NotNullWhen(true)] out long? destination)
         {
             var offset = source - SourceRangeStart;
-            if (offset >= 0 && offset <= RangeLength)
+            if (offset >= 0 && offset < RangeLength)
             {
                 destination = DestinationRangeStart + offset;
                 return true;
@@ -108,5 +136,23 @@ humidity-to-location map:
             destination = null;
             return false;
         }
+
+        public bool TryGetSourceValue(long destination, [NotNullWhen(true)] out long? source)
+        {
+            var offset = destination - DestinationRangeStart;
+            if (offset >= 0 && offset < RangeLength)
+            {
+                source = SourceRangeStart + offset;
+                return true;
+            }
+
+            source = null;
+            return false;
+        }
+    }
+
+    private record Range(long From, long To)
+    {
+        public bool IsInRange(long value) => From <= value && value <= To;
     }
 }
