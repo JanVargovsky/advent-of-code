@@ -7,24 +7,23 @@ internal class Solver
         Debug.Assert(Solve("""
 Time:      7  15   30
 Distance:  9  40  200
-""") == 288);
+""") == 71503);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
         var rows = input.Split(Environment.NewLine);
-        var times = rows[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(int.Parse).ToArray();
-        var distances = rows[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(int.Parse).ToArray();
-        Debug.Assert(times.Length == distances.Length);
+        var time = long.Parse(string.Join("", rows[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)));
+        var distance = long.Parse(string.Join("", rows[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)));
 
-        var result = Enumerable.Range(0, times.Length).Aggregate(1, (acc, index) => acc * Calculate(times[index], distances[index]));
+        var result = Calculate(time, distance);
         return result;
     }
 
-    private int Calculate(int time, int distance)
+    private long Calculate(long time, long distance)
     {
-        var wonCount = 0;
-        for (int i = 0; i <= time; i++)
+        var wonCount = 0L;
+        for (long i = 0; i <= time; i++)
         {
             var holdButton = i;
             var speed = i;
