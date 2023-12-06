@@ -16,7 +16,7 @@ Distance:  9  40  200
         var time = long.Parse(string.Join("", rows[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)));
         var distance = long.Parse(string.Join("", rows[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)));
 
-        var result = Calculate(time, distance);
+        var result = Calculate2(time, distance);
         return result;
     }
 
@@ -32,5 +32,18 @@ Distance:  9  40  200
                 wonCount++;
         }
         return wonCount;
+    }
+
+    private long Calculate2(long time, long distance)
+    {
+        // quadratic formula
+        var b = time;
+        var a = distance;
+        var d = Math.Sqrt(b * b - 4 * a);
+        var x1 = -(b + d) / 2;
+        var x2 = -(b - d) / 2;
+
+        var result = Math.Abs(Math.Ceiling(x2) - Math.Floor(x1));
+        return (long)result - 1;
     }
 }
