@@ -6,7 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<RootNamespace>AdventOfCode.Year2022</RootNamespace>
+		<RootNamespace>AdventOfCode.Year2023</RootNamespace>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 	</PropertyGroup>
 
