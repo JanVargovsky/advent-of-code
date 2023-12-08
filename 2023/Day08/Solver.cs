@@ -1,3 +1,4 @@
+using System.Numerics;
 using MoreLinq;
 
 namespace AdventOfCode.Year2023.Day08;
@@ -20,7 +21,7 @@ XXX = (XXX, XXX)
 """) == 6);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
         var rows = input.Split(Environment.NewLine);
         var instructions = rows[0].Repeat();
@@ -31,10 +32,10 @@ XXX = (XXX, XXX)
         var ends = nodes.Keys.Where(t => t.EndsWith(End)).ToHashSet();
         var lengths = currents.Select(CalculateLength).ToArray();
         var results = string.Join(" ", lengths);
-        // Use e.g. https://www.calculatorsoup.com/calculators/math/lcm.php
-        return 0;
+        var result = FindLCM(lengths);
+        return result;
 
-        int CalculateLength(string node)
+        long CalculateLength(string node)
         {
             var i = 0;
             var current = node;
@@ -58,6 +59,33 @@ XXX = (XXX, XXX)
             var tokens = row.Split([" = (", ", ", ")"], StringSplitOptions.None);
             return new(tokens[0], tokens[1], tokens[2]);
         }
+    }
+
+    private static TNumber GCD<TNumber>(TNumber a, TNumber b) where TNumber : INumber<TNumber>
+    {
+        var zero = TNumber.Zero;
+        while (b != zero)
+        {
+            var temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    private static TNumber LCM<TNumber>(TNumber a, TNumber b) where TNumber : INumber<TNumber>
+    {
+        return (a / GCD(a, b)) * b;
+    }
+
+    private static TNumber FindLCM<TNumber>(TNumber[] numbers) where TNumber : INumber<TNumber>
+    {
+        TNumber result = numbers[0];
+        for (var i = 1; i < numbers.Length; i++)
+        {
+            result = LCM(result, numbers[i]);
+        }
+        return result;
     }
 
     private record Node(string From, string Left, string Right);
