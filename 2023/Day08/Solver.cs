@@ -7,22 +7,16 @@ internal class Solver
     public Solver()
     {
         Debug.Assert(Solve("""
-RL
+LR
 
-AAA = (BBB, CCC)
-BBB = (DDD, EEE)
-CCC = (ZZZ, GGG)
-DDD = (DDD, DDD)
-EEE = (EEE, EEE)
-GGG = (GGG, GGG)
-ZZZ = (ZZZ, ZZZ)
-""") == 2);
-        Debug.Assert(Solve("""
-LLR
-
-AAA = (BBB, BBB)
-BBB = (AAA, ZZZ)
-ZZZ = (ZZZ, ZZZ)
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)
 """) == 6);
     }
 
@@ -31,23 +25,33 @@ ZZZ = (ZZZ, ZZZ)
         var rows = input.Split(Environment.NewLine);
         var instructions = rows[0].Repeat();
         var nodes = rows[2..].Select(Parse).ToDictionary(t => t.From);
-        const string Start = "AAA";
-        const string End = "ZZZ";
-        var i = 0;
-        var current = Start;
-        foreach (var instruction in instructions)
+        const string Start = "A";
+        const string End = "Z";
+        var currents = nodes.Keys.Where(t => t.EndsWith(Start));
+        var ends = nodes.Keys.Where(t => t.EndsWith(End)).ToHashSet();
+        var lengths = currents.Select(CalculateLength).ToArray();
+        var results = string.Join(" ", lengths);
+        // Use e.g. https://www.calculatorsoup.com/calculators/math/lcm.php
+        return 0;
+
+        int CalculateLength(string node)
         {
-            if (current == End)
-                break;
-            current = instruction switch
+            var i = 0;
+            var current = node;
+            foreach (var instruction in instructions)
             {
-                'L' => nodes[current].Left,
-                'R' => nodes[current].Right
-            };
-            i++;
+                if (ends.Contains(current))
+                    return i;
+                current = instruction switch
+                {
+                    'L' => nodes[current].Left,
+                    'R' => nodes[current].Right
+                };
+                i++;
+            }
+
+            throw new ItWontHappenException();
         }
-        var result = i;
-        return result;
 
         Node Parse(string row)
         {
