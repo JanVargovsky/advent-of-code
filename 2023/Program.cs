@@ -9,8 +9,12 @@ var solverType = Assembly.GetExecutingAssembly().GetType($"AdventOfCode.Year{yea
 dynamic solver = Activator.CreateInstance(solverType)!;
 
 var input = await GetOrDownloadInputAsync();
+var stopwatch = Stopwatch.StartNew();
 var result = Convert.ToString(solver.Solve(input));
+stopwatch.Stop();
 Console.WriteLine(result);
+Console.WriteLine();
+Console.WriteLine(stopwatch.Elapsed);
 await ClipboardService.SetTextAsync(result);
 
 async Task<string> GetOrDownloadInputAsync()
