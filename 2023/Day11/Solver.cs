@@ -57,56 +57,35 @@ internal class Solver
             }
         }
 
-        var galaxies2Shift = new Dictionary<Point2d, Point2d>(); // <position, shift>
-        var rowShift = 0;
-        for (int row = 0; row < rows.Length; row++)
-        {
-            var current = galaxies.Where(t => t.Row == row).ToArray();
-            if (current.Length == 0)
-            {
-                rowShift += expansion;
-            }
-            else
-            {
-                foreach (var item in current)
-                {
-                    if (!galaxies2Shift.TryGetValue(item, out var shift))
-                        shift = new Point2d(rowShift, 0);
-                    else
-                        shift = shift with { Row = shift.Row + rowShift };
-                    galaxies2Shift[item] = shift;
-                }
-            }
-        }
-        var columnShift = 0;
-        for (int column = 0; column < rows[0].Length; column++)
-        {
-            var current = galaxies.Where(t => t.Column == column).ToArray();
-            if (current.Length == 0)
-            {
-                columnShift += expansion;
-            }
-            else
-            {
-                foreach (var item in current)
-                {
-                    if (!galaxies2Shift.TryGetValue(item, out var shift))
-                        shift = new Point2d(0, columnShift);
-                    else
-                        shift = shift with { Column = shift.Column + columnShift };
-                    galaxies2Shift[item] = shift;
-                }
-            }
-        }
+        var rowShifts = CalculateShifts(rows.Length, p => p.Row);
+        var columnShifts = CalculateShifts(rows[0].Length, p => p.Column);
 
-        var shiftedGalaxies = galaxies.Select(galaxy =>
-            galaxies2Shift.TryGetValue(galaxy, out var shift) ? new(galaxy.Row + shift.Row, galaxy.Column + shift.Column) : galaxy
-        );
+        var shiftedGalaxies = galaxies.Select(galaxy => new Point2d(galaxy.Row + rowShifts.GetValueOrDefault(galaxy, 0), galaxy.Column + columnShifts.GetValueOrDefault(galaxy, 0)));
 
         var result = shiftedGalaxies.Cartesian(shiftedGalaxies, Distance).Sum() / 2;
         return result;
 
         long Distance(Point2d x, Point2d y) => Math.Abs(y.Row - x.Row) + Math.Abs(y.Column - x.Column);
+
+        Dictionary<Point2d, int> CalculateShifts(int length, Func<Point2d, int> func)
+        {
+            var result = new Dictionary<Point2d, int>(); // <position, shift>
+            var totalShift = 0;
+            for (int i = 0; i < length; i++)
+            {
+                var current = galaxies.Where(t => func(t) == i).ToArray();
+                if (current.Length == 0)
+                {
+                    totalShift += expansion;
+                }
+                else
+                {
+                    foreach (var item in current)
+                        result[item] = totalShift;
+                }
+            }
+            return result;
+        }
     }
 
     private record Point2d(int Row, int Column);
