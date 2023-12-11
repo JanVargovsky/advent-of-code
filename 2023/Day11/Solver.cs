@@ -17,10 +17,34 @@ internal class Solver
 ..........
 .......#..
 #...#.....
-""") == 374);
+""", 1) == 374);
+        Debug.Assert(Solve("""
+...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#.....
+""", 10 - 1) == 1030);
+        Debug.Assert(Solve("""
+...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#.....
+""", 100 - 1) == 8410);
     }
 
-    public int Solve(string input)
+    public long Solve(string input, int expansion = 1000000 - 1)
     {
         var rows = input.Split(Environment.NewLine);
         var galaxies = new List<Point2d>();
@@ -40,7 +64,7 @@ internal class Solver
             var current = galaxies.Where(t => t.Row == row).ToArray();
             if (current.Length == 0)
             {
-                rowShift++;
+                rowShift += expansion;
             }
             else
             {
@@ -60,7 +84,7 @@ internal class Solver
             var current = galaxies.Where(t => t.Column == column).ToArray();
             if (current.Length == 0)
             {
-                columnShift++;
+                columnShift += expansion;
             }
             else
             {
@@ -82,7 +106,7 @@ internal class Solver
         var result = shiftedGalaxies.Cartesian(shiftedGalaxies, Distance).Sum() / 2;
         return result;
 
-        int Distance(Point2d x, Point2d y) => Math.Abs(y.Row - x.Row) + Math.Abs(y.Column - x.Column);
+        long Distance(Point2d x, Point2d y) => Math.Abs(y.Row - x.Row) + Math.Abs(y.Column - x.Column);
     }
 
     private record Point2d(int Row, int Column);
