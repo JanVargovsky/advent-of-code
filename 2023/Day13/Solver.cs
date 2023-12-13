@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace AdventOfCode.Year2023.Day13;
 
 internal class Solver
@@ -24,7 +26,7 @@ internal class Solver
 #####.##.
 ..##..###
 #....#..#
-""") == 405);
+""") == 400);
     }
 
     public int Solve(string input)
@@ -55,21 +57,37 @@ internal class Solver
 
         throw new ItWontHappenException();
 
-        bool Compare(int[] values, int mid)
+        bool Compare(uint[] values, int mid)
         {
             var left = values.Take(mid + 1).Reverse();
             var right = values.Skip(mid + 1);
-            var same = left.Zip(right).All(t => t.First == t.Second);
-            return same;
+            var smudged = false;
+            foreach (var (a, b) in left.Zip(right))
+            {
+                var xor = a ^ b;
+                var count = BitOperations.PopCount(xor);
+                if (count == 0)
+                    continue;
+                else if (count == 1)
+                {
+                    if (smudged)
+                        return false;
+                    smudged = true;
+                }
+                else
+                    return false;
+            }
+            return smudged;
+
         }
 
         IEnumerable<char> SelectColumn(int i) => Enumerable.Range(0, rows.Length).Select(r => rows[r][i]);
     }
 
-    private int Encode(IEnumerable<char> values)
+    private uint Encode(IEnumerable<char> values)
     {
-        int result = 0;
-        var bit = 1;
+        var result = 0u;
+        var bit = 1u;
 
         foreach (var item in values)
         {
