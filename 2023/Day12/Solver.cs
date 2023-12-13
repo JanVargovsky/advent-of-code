@@ -1,11 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+using MoreLinq;
+
 namespace AdventOfCode.Year2023.Day12;
 
 internal class Solver
 {
     public Solver()
     {
-        Debug.Assert(ReplaceAt("0123", 1, '.').Equals("0.23"));
-
         Debug.Assert(Solve("""
 ???.### 1,1,3
 .??..??...?##. 1,1,3
@@ -13,10 +14,10 @@ internal class Solver
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1
-""") == 21);
+""") == 525152);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
         var springs = input.Split(Environment.NewLine).Select(Parse).ToArray();
         var results = springs.Select(ArrangementsCount);
@@ -27,53 +28,99 @@ internal class Solver
     private Spring Parse(string row)
     {
         var tokens = row.Split(' ', ',');
-        var numbers = tokens[1..].Select(int.Parse).ToArray();
-        return new(tokens[0], numbers);
+        var unfold = 5;
+        var value = string.Join('?', Enumerable.Range(0, unfold).Select(_ => tokens[0]));
+        var numbers = tokens[1..].Select(int.Parse).ToArray().Repeat(5).ToArray();
+        return new(value, numbers);
     }
 
-    private int ArrangementsCount(Spring spring)
+    private long ArrangementsCount(Spring spring)
     {
-        var s = new Stack<string>();
-        s.Push(spring.Value);
-        var visited = new HashSet<string>();
-        var count = 0;
+        var dp = new Dictionary<Spring, long>(new SpringComparer());
+        var result = ArrangementsCountInternalWithDpCache(spring);
+        return result;
 
-        while (s.TryPop(out var current))
+        long ArrangementsCountInternalWithDpCache(Spring spring)
         {
-            if (!visited.Add(current))
-                continue;
-
-            var index = current.IndexOf('?');
-            if (index == -1)
-            {
-                if (IsValid(current))
-                    count++;
-                continue;
-            }
-
-            s.Push(ReplaceAt(current, index, '.'));
-            s.Push(ReplaceAt(current, index, '#'));
+            if (dp.TryGetValue(spring, out var result))
+                return result;
+            result = ArrangementsCountInternal(spring);
+            dp.Add(spring, result);
+            return result;
         }
 
-        return count;
-
-        bool IsValid(string value)
+        long ArrangementsCountInternal(Spring spring)
         {
-            var groups = value.Split('.', StringSplitOptions.RemoveEmptyEntries);
-            if (groups.Length != spring.GroupSizes.Length)
-                return false;
+            if (spring.Value.Length == 0)
+                return spring.GroupSizes.Length == 0 ? 1 : 0;
 
-            for (int i = 0; i < groups.Length; i++)
+            if (spring.GroupSizes.Length == 0)
             {
-                if (groups[i].Length != spring.GroupSizes[i])
-                    return false;
+                var invalid = spring.Value.Any(t => t == '#');
+                return invalid ? 0 : 1;
             }
 
-            return true;
+            if (spring.Value.Length < spring.GroupSizes.Sum())
+                return 0;
+
+            if (spring.Value[0] == '.')
+            {
+                return ArrangementsCountInternalWithDpCache(spring with
+                {
+                    Value = spring.Value[1..]
+                });
+            }
+            else if (spring.Value[0] == '#')
+            {
+                var group = spring.GroupSizes[0];
+                var invalid = spring.Value[..group].Any(t => t == '.');
+                if (invalid)
+                    return 0;
+
+                if (group < spring.Value.Length && spring.Value[group] == '#')
+                    return 0;
+
+                return ArrangementsCountInternalWithDpCache(spring with
+                {
+                    Value = group + 1 < spring.Value.Length ? spring.Value[(group + 1)..] : string.Empty,
+                    GroupSizes = spring.GroupSizes[1..]
+                });
+            }
+            else if (spring.Value[0] == '?')
+            {
+                var a = spring with
+                {
+                    Value = '.' + spring.Value[1..],
+                };
+                var b = spring with
+                {
+                    Value = '#' + spring.Value[1..],
+                };
+                return ArrangementsCountInternalWithDpCache(a) + ArrangementsCountInternalWithDpCache(b);
+            }
+            else
+                throw new ItWontHappenException();
         }
     }
-
-    private string ReplaceAt(string s, int index, char c) => new([.. s[..index], c, .. s[(index + 1)..]]);
 
     private record Spring(string Value, int[] GroupSizes);
+
+    private class SpringComparer : IEqualityComparer<Spring>
+    {
+        public bool Equals(Spring? x, Spring? y)
+        {
+            return x.Value.Length == y.Value.Length &&
+                x.GroupSizes.Length == y.GroupSizes.Length &&
+                x.Value.Equals(y.Value) &&
+                x.GroupSizes.SequenceEqual(y.GroupSizes);
+        }
+
+        public int GetHashCode([DisallowNull] Spring obj)
+        {
+            var result = obj.Value.GetHashCode();
+            foreach (var item in obj.GroupSizes)
+                result = HashCode.Combine(result, item);
+            return result;
+        }
+    }
 }
