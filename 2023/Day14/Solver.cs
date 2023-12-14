@@ -17,7 +17,7 @@ O.#..O.#.#
 .......O..
 #....###..
 #OO..#....
-""") == 136);
+""") == 64);
     }
 
     public int Solve(string input)
@@ -36,23 +36,71 @@ O.#..O.#.#
             }
         }
 
-        var tiltDirection = new Point2d(0, -1);
-        var afterTilt = Tilt(cubeRocks, roundRocks, tiltDirection);
-        var heights = afterTilt.Select(t => rows.Length - t.Y);
-        var result = heights.Sum();
-        return result;
+        var north = new DirectionWithOrder(new(0, -1), p => p.Y);
+        var west = new DirectionWithOrder(new(-1, 0), p => p.X);
+        var south = new DirectionWithOrder(new(0, 1), p => -p.Y);
+        var east = new DirectionWithOrder(new(1, 0), p => -p.X);
+        var tilts = new DirectionWithOrder[] { north, west, south, east };
+        var max = new Point2d(rows[0].Length, rows.Length);
+        var cycle = 0;
+        var wantedCycle = 1000000000;
+        var history = new List<(HashSet<Point2d> RoundRocks, int Result)>();
+        while (cycle++ <= wantedCycle)
+        {
+            foreach (var tilt in tilts)
+                roundRocks = Tilt(cubeRocks, roundRocks, tilt, max);
+
+            //Print(cubeRocks, roundRocks, max);
+            //Console.WriteLine();re
+            var heights = roundRocks.Select(t => rows.Length - t.Y);
+            var result = heights.Sum();
+
+            var index = history.FindIndex(t => t.RoundRocks.SetEquals(roundRocks));
+            if (index >= 0)
+            {
+                var cycleStart = index;
+                var cycleEnd = cycle - 1;
+                var cycleLength = cycleEnd - cycleStart;
+                var offsetBeforeCycle = cycleStart;
+                var historyResultIndex = ((wantedCycle - offsetBeforeCycle) % cycleLength) + offsetBeforeCycle - 1;
+                var historyResult = history[historyResultIndex];
+                return historyResult.Result;
+            }
+
+            history.Add((roundRocks, result));
+        }
+
+        throw new ItWontHappenException();
     }
 
-    private HashSet<Point2d> Tilt(IReadOnlySet<Point2d> cubeRocks, IReadOnlySet<Point2d> roundRocks, Point2d direction)
+    private void Print(IReadOnlySet<Point2d> cubeRocks, IReadOnlySet<Point2d> roundRocks, Point2d max)
+    {
+        for (int y = 0; y < max.Y; y++)
+        {
+            for (int x = 0; x < max.X; x++)
+            {
+                var p = new Point2d(x, y);
+                if (cubeRocks.Contains(p))
+                    Console.Write('#');
+                else if (roundRocks.Contains(p))
+                    Console.Write('O');
+                else
+                    Console.Write('.');
+            }
+            Console.WriteLine();
+        }
+    }
+
+    private HashSet<Point2d> Tilt(IReadOnlySet<Point2d> cubeRocks, IReadOnlySet<Point2d> roundRocks, DirectionWithOrder direction, Point2d max)
     {
         var newRoundRocks = new HashSet<Point2d>();
 
-        foreach (var rock in roundRocks.OrderBy(t => t.Y))
+        foreach (var rock in roundRocks.OrderBy(direction.Order))
         {
             var current = rock;
             while (true)
             {
-                var next = current + direction;
+                var next = current + direction.Direction;
                 if (IsInRange(next) && !cubeRocks.Contains(next) && !newRoundRocks.Contains(next))
                     current = next;
                 else
@@ -66,8 +114,10 @@ O.#..O.#.#
 
         return newRoundRocks;
 
-        bool IsInRange(Point2d p) => p.Y >= 0;
+        bool IsInRange(Point2d p) => p.X >= 0 && p.Y >= 0 && p.X < max.X && p.Y < max.Y;
     }
+
+    private record DirectionWithOrder(Point2d Direction, Func<Point2d, int> Order);
 
     private record Point2d(int X, int Y) : IAdditionOperators<Point2d, Point2d, Point2d>
     {
