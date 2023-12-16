@@ -17,7 +17,7 @@ internal class Solver
 .-.-/..|..
 .|....-|.\
 ..//.|....
-""") == 46);
+""") == 51);
     }
 
     public int Solve(string input)
@@ -27,46 +27,65 @@ internal class Solver
         var down = new Point2d(1, 0);
         var left = new Point2d(0, -1);
         var right = new Point2d(0, 1);
+        var directions = new[] { up, down, left, right };
         var stateMachine = CreateStateMachine();
-        var visited = new HashSet<State>();
-        var states = new HashSet<State>();
-        var initial = new State(new(0, 0), right);
-        states.Add(initial);
-        visited.Add(initial);
+        var max = -1;
 
-        while (states.Count > 0)
+        for (int row = 0; row < grid.Length; row++)
         {
-            //Print();
-
-            var newStates = new HashSet<State>();
-            foreach (var state in states)
-            {
-                foreach (var newState in Next(state))
-                {
-                    if (IsInRange(newState.Point) && visited.Add(newState))
-                        newStates.Add(newState);
-                }
-            }
-            states = newStates;
+            max = Math.Max(max, Simulate(new Point2d(row, 0), right));
+            max = Math.Max(max, Simulate(new Point2d(row, grid[0].Length - 1), left));
+        }
+        for (int col = 0; col < grid[0].Length; col++)
+        {
+            max = Math.Max(max, Simulate(new Point2d(0, col), down));
+            max = Math.Max(max, Simulate(new Point2d(grid.Length - 1, col), up));
         }
 
-        var visitedPoints = visited.Select(t => t.Point).Distinct();
-        var result = visitedPoints.Count();
-        return result;
+        return max;
 
-        void Print()
+        int Simulate(Point2d start, Point2d direction)
         {
-            var points = visited.Select(t => t.Point).ToHashSet();
-            for (int row = 0; row < grid.Length; row++)
+            var visited = new HashSet<State>();
+            var states = new HashSet<State>();
+            var initial = new State(start, direction);
+            states.Add(initial);
+            visited.Add(initial);
+
+            while (states.Count > 0)
             {
-                for (int col = 0; col < grid[row].Length; col++)
+                //Print();
+
+                var newStates = new HashSet<State>();
+                foreach (var state in states)
                 {
-                    var visited = points.Contains(new(row, col));
-                    Console.Write(visited ? '#' : grid[row][col]);
+                    foreach (var newState in Next(state))
+                    {
+                        if (IsInRange(newState.Point) && visited.Add(newState))
+                            newStates.Add(newState);
+                    }
+                }
+                states = newStates;
+            }
+
+            var visitedPoints = visited.Select(t => t.Point).Distinct();
+            var result = visitedPoints.Count();
+            return result;
+
+            void Print()
+            {
+                var points = visited.Select(t => t.Point).ToHashSet();
+                for (int row = 0; row < grid.Length; row++)
+                {
+                    for (int col = 0; col < grid[row].Length; col++)
+                    {
+                        var visited = points.Contains(new(row, col));
+                        Console.Write(visited ? '#' : grid[row][col]);
+                    }
+                    Console.WriteLine();
                 }
                 Console.WriteLine();
             }
-            Console.WriteLine();
         }
 
         bool IsInRange(Point2d p) => p.Row >= 0 && p.Column >= 0 && p.Row < grid.Length && p.Column < grid[p.Row].Length;
