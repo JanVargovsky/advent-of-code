@@ -20,7 +20,14 @@ internal class Solver
 1224686865563
 2546548887735
 4322674655533
-""") == 102);
+""") == 94);
+        Debug.Assert(Solve("""
+111111111111
+999999999991
+999999999991
+999999999991
+999999999991
+""") == 71);
     }
 
     public int Solve(string input)
@@ -31,7 +38,8 @@ internal class Solver
         var distances = new Dictionary<Point2d, int>();
         distances[start] = 0;
         var q = new PriorityQueue<State, int>();
-        q.Enqueue(new(start, new(0, 1), 0), 0);
+        q.Enqueue(new(start, new(0, 1), 1), 0);
+        q.Enqueue(new(start, new(1, 0), 1), 0);
         var path = new Dictionary<Point2d, Point2d>();
         var visited = new HashSet<State>();
 
@@ -43,11 +51,14 @@ internal class Solver
                 continue;
 
             var newStates = new List<State>();
-            var left = new Point2d(-state.Direction.Column, state.Direction.Row);
-            newStates.Add(new State(state.Position + left, left, 0));
-            var right = new Point2d(state.Direction.Column, -state.Direction.Row);
-            newStates.Add(new State(state.Position + right, right, 0));
-            if (state.StraightCount < 2)
+            if (state.StraightCount > 3)
+            {
+                var left = state.Direction.Left;
+                newStates.Add(new State(state.Position + left, left, 1));
+                var right = state.Direction.Right;
+                newStates.Add(new State(state.Position + right, right, 1));
+            }
+            if (state.StraightCount < 10)
                 newStates.Add(state with
                 {
                     Position = state.Position + state.Direction,
@@ -57,6 +68,9 @@ internal class Solver
             foreach (var newState in newStates)
             {
                 if (!IsValid(newState.Position))
+                    continue;
+
+                if (newState.Position == end && newState.StraightCount <= 3)
                     continue;
 
                 var distance = totalDistance + GetDistance(newState.Position);
@@ -79,22 +93,27 @@ internal class Solver
 
         void Print()
         {
-            var points = new HashSet<Point2d>();
+            var pathPoints = new HashSet<Point2d>();
             var current = end;
-            points.Add(current);
+            pathPoints.Add(current);
             while (path.TryGetValue(current, out var previous))
             {
-                points.Add(previous);
+                pathPoints.Add(previous);
                 current = previous;
             }
+            var visitedPoints = visited.Select(t => t.Position).ToHashSet();
 
             for (int row = 0; row < map.Length; row++)
             {
                 for (int col = 0; col < map[row].Length; col++)
                 {
-                    var visited = points.Contains(new(row, col));
-                    if (visited)
+                    var p = new Point2d(row, col);
+                    var isPath = pathPoints.Contains(p);
+                    var isVisited = visitedPoints.Contains(p);
+                    if (isPath)
                         Console.ForegroundColor = ConsoleColor.Green;
+                    else if (isVisited)
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                     else
                         Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write(map[row][col]);
