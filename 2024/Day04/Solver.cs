@@ -5,6 +5,12 @@ internal class Solver
     public Solver()
     {
         Debug.Assert(Solve("""
+1.2
+.A.
+3.4
+""") == 0);
+
+        Debug.Assert(Solve("""
 MMMSXXMASM
 MSAMXMSMSA
 AMXSXMAAMM
@@ -15,7 +21,7 @@ SMSMSASXSS
 SAXAMASAAA
 MAMMMXMMMM
 MXMXAXMASX
-""") == 18);
+""") == 9);
     }
 
     public int Solve(string input)
@@ -25,30 +31,27 @@ MXMXAXMASX
 
         for (int y = 0; y < map.Length; y++)
             for (int x = 0; x < map[y].Length; x++)
-                for (int dx = -1; dx <= 1; dx++)
-                    for (int dy = -1; dy <= 1; dy++)
-                    {
-                        if (dx == 0 && dy == 0)
-                            continue;
-
-                        if (Check(x, y, dx, dy))
-                            count++;
-                    }
+            {
+                if (Check(x, y))
+                    count++;
+            }
 
         return count;
 
-        bool Check(int x, int y, int dx, int dy)
+        bool Check(int x, int y)
         {
-            if (!IsInRange(x + 3 * dx, y + 3 * dy))
+            if (map[y][x] != 'A')
                 return false;
 
-            var word = new char[4];
-            for (int i = 0; i < word.Length; i++)
-            {
-                word[i] = map[y + i * dy][x + i * dx];
-            }
+            if (!IsInRange(x - 1, y - 1) || !IsInRange(x - 1, y + 1) || !IsInRange(x + 1, y - 1) || !IsInRange(x + 1, y + 1))
+                return false;
 
-            return word.SequenceEqual("XMAS");
+            var a = map[y - 1][x - 1];
+            var b = map[y - 1][x + 1];
+            var c = map[y + 1][x - 1];
+            var d = map[y + 1][x + 1];
+
+            return $"{a}{d}" is "MS" or "SM" && $"{b}{c}" is "MS" or "SM";
         }
 
         bool IsInRange(int x, int y) => x >= 0 && y >= 0 && y < map.Length && x < map[y].Length;
