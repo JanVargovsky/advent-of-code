@@ -11,14 +11,23 @@ internal class Solver
 
     public long Solve(string input)
     {
-        var regex = new Regex(@"mul\((\d+),(\d+)\)");
+        var regex = new Regex(@"mul\((\d+),(\d+)\)|don't()|do()");
         var sum = 0l;
+        var enabled = true;
         foreach (Match match in regex.Matches(input))
         {
-            var a = int.Parse(match.Groups[1].ValueSpan);
-            var b = int.Parse(match.Groups[2].ValueSpan);
+            if (match.Value == "don't")
+                enabled = false;
+            else if (match.Value == "do")
+                enabled = true;
+            else if (enabled)
 
-            sum += a * b;
+            {
+                var a = int.Parse(match.Groups[1].ValueSpan);
+                var b = int.Parse(match.Groups[2].ValueSpan);
+
+                sum += a * b;
+            }
         }
         return sum;
     }
