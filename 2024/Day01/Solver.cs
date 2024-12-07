@@ -11,7 +11,7 @@ internal class Solver
 1   3
 3   9
 3   3
-""") == 11);
+""") == 31);
     }
 
     public long Solve(string input)
@@ -25,11 +25,9 @@ internal class Solver
             left.Add(long.Parse(tokens[0]));
             right.Add(long.Parse(tokens[1]));
         }
+        var grouped = right.GroupBy(t => t).ToDictionary(t => t.Key, t => t.Count());
 
-        left.Sort();
-        right.Sort();
-
-        var result = left.Zip(right).Sum(t => Math.Abs(t.First - t.Second));
+        var result = left.Sum(t => t * grouped.GetValueOrDefault(t, 0));
         return result;
     }
 }
