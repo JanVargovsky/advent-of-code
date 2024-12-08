@@ -33,7 +33,7 @@ internal class Solver
 75,97,47,61,53
 61,13,29
 97,13,75,29,47
-""") == 143);
+""") == 123);
     }
 
     public long Solve(string input)
@@ -45,8 +45,11 @@ internal class Solver
         var result = 0;
         foreach (var update in updates)
         {
-            if (Check(update, rules))
+            if (!Check(update, rules))
+            {
+                while (!Check(update, rules)) ;
                 result += update[update.Length / 2];
+            }
         }
 
         return result;
@@ -62,7 +65,10 @@ internal class Solver
                     foreach (var rule in relevantRules)
                     {
                         if (rule.Before == update[j] && rule.After == update[i])
+                        {
+                            (update[j], update[i]) = (update[i], update[j]);
                             return false;
+                        }
                     }
                 }
             }
