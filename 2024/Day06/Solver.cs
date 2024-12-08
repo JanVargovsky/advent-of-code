@@ -17,72 +17,95 @@ internal class Solver
 ........#.
 #.........
 ......#...
-""") == 41);
+""") == 6);
     }
 
     public int Solve(string input)
     {
         var map = input.Split(Environment.NewLine);
-        var directions = new[] { Point.Top, Point.Right, Point.Bottom, Point.Left };
-        var directionIndex = 0;
+        var loops = 0;
 
-        var visited = new HashSet<Point>();
-        var current = Find('^');
-        visited.Add(current);
-
-        while (true)
+        for (var y = 0; y < map.Length; y++)
         {
-            var next = current + directions[directionIndex];
+            for (var x = 0; x < map[y].Length; x++)
+            {
+                if (map[y][x] == '.')
+                {
+                    var backup = map[y];
+                    var charArray = map[y].ToCharArray();
+                    charArray[x] = '#';
+                    map[y] = new string(charArray);
 
-            if (!IsValid(next))
-            {
-                visited.Add(current);
-                break; // out of map
-            }
+                    if (IsLoop())
+                        loops++;
 
-            if (map[next.Y][next.X] != '#')
-            {
-                //Print(current);
-                Console.WriteLine();
-                visited.Add(current);
-                current = next;
-            }
-            else
-            {
-                directionIndex++;
-                directionIndex %= directions.Length;
+                    map[y] = backup;
+                }
             }
         }
 
-        var result = visited.Count;
-        return result;
+        return loops;
 
-        void Print(Point current)
+        bool IsLoop()
         {
-            for (var y = 0; y < map.Length; y++)
+            var directions = new[] { Point.Top, Point.Right, Point.Bottom, Point.Left };
+            var directionIndex = 0;
+
+            var visited = new HashSet<(Point, int)>();
+            var current = Find('^');
+
+            while (true)
             {
-                for (var x = 0; x < map[y].Length; x++)
+                var next = current + directions[directionIndex];
+
+                // out of map
+                if (!IsValid(next))
+                    return false;
+
+                if (map[next.Y][next.X] != '#')
                 {
-                    var p = new Point(x, y);
-                    if (p == current)
+                    if (!visited.Add((current, directionIndex)))
                     {
-                        if (directions[directionIndex] == Point.Top)
-                            Console.Write('^');
-                        else if (directions[directionIndex] == Point.Bottom)
-                            Console.Write('v');
-                        else if (directions[directionIndex] == Point.Left)
-                            Console.Write('<');
-                        else if (directions[directionIndex] == Point.Right)
-                            Console.Write('>');
-                        else
-                            Console.Write('?');
+                        //Print(current);
+                        //Console.WriteLine();
+                        return true;
                     }
-                    else if (visited.Contains(p))
-                        Console.Write('X');
-                    else
-                        Console.Write(map[y][x]);
+                    current = next;
                 }
-                Console.WriteLine();
+                else
+                {
+                    directionIndex++;
+                    directionIndex %= directions.Length;
+                }
+            }
+
+            void Print(Point current)
+            {
+                for (var y = 0; y < map.Length; y++)
+                {
+                    for (var x = 0; x < map[y].Length; x++)
+                    {
+                        var p = new Point(x, y);
+                        if (p == current)
+                        {
+                            if (directions[directionIndex] == Point.Top)
+                                Console.Write('^');
+                            else if (directions[directionIndex] == Point.Bottom)
+                                Console.Write('v');
+                            else if (directions[directionIndex] == Point.Left)
+                                Console.Write('<');
+                            else if (directions[directionIndex] == Point.Right)
+                                Console.Write('>');
+                            else
+                                Console.Write('?');
+                        }
+                        else if (visited.Contains((p, directionIndex)))
+                            Console.Write('X');
+                        else
+                            Console.Write(map[y][x]);
+                    }
+                    Console.WriteLine();
+                }
             }
         }
 
