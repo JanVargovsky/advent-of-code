@@ -14,7 +14,7 @@ internal class Solver
 192: 17 8 14
 21037: 9 7 18 13
 292: 11 6 16 20
-""") == 3749);
+""") == 11387);
     }
 
     public long Solve(string input)
@@ -31,7 +31,9 @@ internal class Solver
             if (index >= equation.Numbers.Length)
                 return equation.TestValue == result ? 1 : 0;
 
-            return Evaluate(equation, index + 1, result + equation.Numbers[index]) + Evaluate(equation, index + 1, result * equation.Numbers[index]);
+            return Evaluate(equation, index + 1, result + equation.Numbers[index]) +
+                Evaluate(equation, index + 1, result * equation.Numbers[index]) +
+                Evaluate(equation, index + 1, long.Parse($"{result}{equation.Numbers[index]}"));
         }
 
         Equation Parse(string row)
