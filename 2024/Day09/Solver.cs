@@ -8,7 +8,7 @@ internal class Solver
     {
         Debug.Assert(Solve("""
 2333133121414131402
-""") == 1928);
+""") == 2858);
     }
 
     public long Solve(string input)
@@ -25,7 +25,6 @@ internal class Solver
 
             foreach (var block in diskMap)
             {
-                Debug.Assert(block.IsFile);
                 for (var i = 0; i < block.Length; i++)
                 {
                     result += (index++ * block.Id);
@@ -37,57 +36,57 @@ internal class Solver
 
         void Compact(LinkedList<Block> diskMap)
         {
-            var current = diskMap.First!;
-            while (current != null && current != diskMap.Last)
+            var files = diskMap.Where(t => t.IsFile).Reverse().ToArray();
+
+            foreach (var file in files)
             {
-                if (current!.Value.IsFile)
-                {
-                    current = current.Next!;
-                    continue;
-                }
+                var current = diskMap.First!;
+                var fileNode = diskMap.Find(file)!;
 
-                if (!diskMap.Last!.Value.IsFile)
-                {
-                    diskMap.RemoveLast();
-                    continue;
-                }
-
+                //Console.WriteLine($"Trying to move {file.Id}");
                 //Console.WriteLine(ToString(diskMap));
 
-                var last = diskMap.Last.Value;
+                while (current != null && current != fileNode)
+                {
+                    if (current.Value.IsFile)
+                    {
+                        current = current.Next;
+                        continue;
+                    }
 
-                if (current.Value.Length == last.Length)
-                {
-                    // perfect fit
-                    diskMap.RemoveLast();
-                    current.Value = last;
-                }
-                else if (current.Value.Length < last.Length)
-                {
-                    // empty block is not large enough
-                    diskMap.Last.Value = last with
+                    if (current.Value.Length == file.Length)
                     {
-                        Length = last.Length - current.Value.Length,
-                    };
-                    current.Value = last with
-                    {
-                        Length = current.Value.Length
-                    };
-                }
-                else if (current.Value.Length > last.Length)
-                {
-                    // empty block is larger
-                    diskMap.AddBefore(current, last);
-                    diskMap.RemoveLast();
-                    current.Value = last with
-                    {
-                        IsFile = false,
-                        Length = current.Value.Length - last.Length,
-                    };
-                }
+                        // perfect fit
+                        (current.Value, fileNode.Value) = (fileNode.Value, current.Value);
 
-                //Console.WriteLine(ToString(diskMap));
-                //Console.WriteLine();
+                        //Console.WriteLine(ToString(diskMap));
+                        break;
+                    }
+                    else if (current.Value.Length > file.Length)
+                    {
+                        // empty block is larger
+
+                        var empty = current.Value;
+
+                        diskMap.AddBefore(current, file);
+
+                        current.Value = current.Value with
+                        {
+                            Length = current.Value.Length - file.Length,
+                        };
+
+                        fileNode.Value = file with
+                        {
+                            IsFile = false,
+                            Id = 0,
+                        };
+
+                        //Console.WriteLine(ToString(diskMap));
+                        break;
+                    }
+                    else
+                        current = current.Next;
+                }
             }
         }
 
