@@ -35,7 +35,7 @@ internal class Solver
 32019012
 01329801
 10456732
-""") == 36);
+""") == 81);
     }
 
     public long Solve(string input)
@@ -48,8 +48,8 @@ internal class Solver
         long Score(Point start)
         {
             var paths = new HashSet<(Point Start, Point End)>();
-            _ = ScoreInternal(start, 0, [start]);
-            return paths.Count;
+            var score = ScoreInternal(start, 0, [start]);
+            return score;
 
             long ScoreInternal(Point p, int expected, List<Point> path)
             {
