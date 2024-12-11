@@ -9,35 +9,40 @@ internal class Solver
         Debug.Assert(Solve("125 17", 25) == 55312);
     }
 
-    public int Solve(string input, int blink = 25)
+    public long Solve(string input, int blink = 75)
     {
-        var data = input.Split(' ').Select(long.Parse).ToList();
+        var numbers = input.Split(' ').Select(long.Parse);
+        var data = new Dictionary<long, long>(); // <number, count>
+        foreach (var item in numbers)
+            data[item] = data.GetValueOrDefault(item, 0) + 1;
 
         for (int i = 0; i < blink; i++)
-        {
             data = Blink(data);
-        }
 
-        return data.Count;
+        return data.Values.Sum();
 
-        List<long> Blink(List<long> data)
+        Dictionary<long, long> Blink(Dictionary<long, long> data)
         {
-            var result = new List<long>();
-            foreach (var item in data)
+            var result = new Dictionary<long, long>();
+            foreach (var (item, count) in data)
             {
                 var stringItem = item.ToString();
                 if (item == 0)
                 {
-                    result.Add(1);
+                    result[1] = result.GetValueOrDefault(1, 0) + count;
                 }
                 else if (stringItem.Length % 2 == 0)
                 {
-                    result.Add(long.Parse(stringItem[..(stringItem.Length / 2)]));
-                    result.Add(long.Parse(stringItem[(stringItem.Length / 2)..]));
+                    var a = long.Parse(stringItem[..(stringItem.Length / 2)]);
+                    var b = long.Parse(stringItem[(stringItem.Length / 2)..]);
+
+                    result[a] = result.GetValueOrDefault(a, 0) + count;
+                    result[b] = result.GetValueOrDefault(b, 0) + count;
                 }
                 else
                 {
-                    result.Add(item * 2024);
+                    var a = item * 2024;
+                    result[a] = result.GetValueOrDefault(a, 0) + count;
                 }
             }
             return result;
