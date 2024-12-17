@@ -22,7 +22,7 @@ internal class Solver
 #.###.#.#.#.#.#
 #S..#.....#...#
 ###############
-""") == 7036);
+""") == 45);
 
         Debug.Assert(Solve("""
 #################
@@ -42,7 +42,7 @@ internal class Solver
 #.#.#.#########.#
 #S#.............#
 #################
-""") == 11048);
+""") == 64);
     }
 
     public long Solve(string input)
@@ -50,23 +50,40 @@ internal class Solver
         var map = input.Split(Environment.NewLine);
         var start = Find('S');
         var end = Find('E');
-        var q = new PriorityQueue<(Point Point, Point Direction), long>();
-        q.Enqueue((start, new Point(1, 0)), 0);
+        var q = new PriorityQueue<(Point Point, Point Direction, List<Point> Path), long>();
+        q.Enqueue((start, new Point(1, 0), [start]), 0);
         var visited = new Dictionary<(Point Point, Point Direction), long>();
+
+        var bestPaths = new List<List<Point>>();
+        long? acceptedDistance = null;
 
         while (q.TryDequeue(out var items, out var distance))
         {
-            var (position, direction) = items;
+            var (position, direction, path) = items;
             if (position == end)
-                return distance;
+            {
+                if (!acceptedDistance.HasValue)
+                    acceptedDistance = distance;
+
+                if ((acceptedDistance.HasValue && acceptedDistance.Value == distance))
+                {
+                    //Print(path.ToHashSet());
+                    bestPaths.Add(path);
+                }
+
+                continue;
+            }
+
+            if (acceptedDistance.HasValue && distance > acceptedDistance)
+                continue;
 
             if (!IsValid(position))
                 continue;
 
-            if (visited.GetValueOrDefault(items, int.MaxValue) < distance)
+            if (visited.GetValueOrDefault((position, direction), int.MaxValue) < distance)
                 continue;
 
-            visited[items] = distance;
+            visited[(position, direction)] = distance;
 
             if (map[position.Y][position.X] == '#')
                 continue;
@@ -78,14 +95,36 @@ internal class Solver
             var nextRight = position + rightDirection;
 
             if (IsValid(next))
-                q.Enqueue((next, direction), distance + 1);
+                q.Enqueue((next, direction, [.. path, next]), distance + 1);
             if (IsValid(nextLeft))
-                q.Enqueue((nextLeft, leftDirection), distance + 1001);
+                q.Enqueue((nextLeft, leftDirection, [.. path, nextLeft]), distance + 1001);
             if (IsValid(nextRight))
-                q.Enqueue((nextRight, rightDirection), distance + 1001);
+                q.Enqueue((nextRight, rightDirection, [.. path, nextRight]), distance + 1001);
         }
 
-        throw new ItWontHappenException();
+        var bestPoints = bestPaths.SelectMany(t => t).ToHashSet();
+
+        //Print(bestPoints);
+
+        return bestPoints.Count;
+
+        void Print(HashSet<Point> points)
+        {
+            for (var y = 0; y < map.Length; y++)
+            {
+                for (var x = 0; x < map[y].Length; x++)
+                {
+                    var p = new Point(x, y);
+
+                    if (points.Contains(p))
+                        Console.Write('O');
+                    else
+                        Console.Write(map[y][x]);
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+        }
 
         bool IsValid(Point p) => p.X >= 0 && p.Y >= 0 && p.Y < map.Length && p.X < map[p.Y].Length;
 
