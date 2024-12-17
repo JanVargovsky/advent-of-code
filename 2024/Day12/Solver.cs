@@ -11,7 +11,7 @@ AAAA
 BBCD
 BBCC
 EEEC
-""") == 140);
+""") == 80);
 
         Debug.Assert(Solve("""
 OOOOO
@@ -19,7 +19,24 @@ OXOXO
 OOOOO
 OXOXO
 OOOOO
-""") == 772);
+""") == 436);
+
+        Debug.Assert(Solve("""
+EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE
+""") == 236);
+
+        Debug.Assert(Solve("""
+AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA
+""") == 368);
 
         Debug.Assert(Solve("""
 RRRRIICCFF
@@ -32,14 +49,14 @@ VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE
-""") == 1930);
+""") == 1206);
     }
 
     public long Solve(string input)
     {
         var map = input.Split(Environment.NewLine);
         var regions = Parse(map);
-        var prices = regions.Select(t => t.Area * t.Perimeter);
+        var prices = regions.Select(t => t.Area * t.Fences);
         var result = prices.Sum();
         return result;
 
@@ -101,6 +118,53 @@ record Region(char Name, HashSet<Point> Points)
 {
     public long Area => Points.Count;
     public long Perimeter => CalculatePerimeter();
+    public long Fences => CalculateFences();
+
+    long CalculateFences()
+    {
+        var fences = new HashSet<(Point Point, FenceType Type)>();
+        var directions = new (Point Direction, FenceType Type)[] {
+            (Point.Up, FenceType.Up),
+            (Point.Down, FenceType.Down),
+            (Point.Left, FenceType.Left),
+            (Point.Right, FenceType.Right)
+        };
+
+        foreach (var p in Points)
+        {
+            foreach (var (direction, type) in directions)
+            {
+                if (!Points.Contains(p + direction))
+                    fences.Add((p, type));
+            }
+        }
+
+        var groupedFences = fences.GroupBy(t => t.Type).ToDictionary(t => t.Key, t => t.Select(t => t.Point).ToHashSet());
+        var fenceCount = 0L;
+
+        foreach (var (type, points) in groupedFences)
+        {
+            var grouped = type switch
+            {
+                FenceType.Up or FenceType.Down => points.GroupBy(t => t.Y).ToDictionary(t => t.Key, t => t.Select(t => t.X).Order().ToArray()),
+                FenceType.Left or FenceType.Right => points.GroupBy(t => t.X).ToDictionary(t => t.Key, t => t.Select(t => t.Y).Order().ToArray()),
+                _ => throw new ItWontHappenException(),
+            };
+
+            foreach (var items in grouped.Values)
+            {
+                fenceCount++;
+                // calculate gaps in increasing sequence
+                for (int i = 1; i < items.Length; i++)
+                {
+                    if (items[i - 1] + 1 != items[i])
+                        fenceCount++;
+                }
+            }
+        }
+
+        return fenceCount;
+    }
 
     long CalculatePerimeter()
     {
@@ -120,6 +184,14 @@ record Region(char Name, HashSet<Point> Points)
                     result++;
             return result;
         }
+    }
+
+    enum FenceType
+    {
+        Up,
+        Down,
+        Left,
+        Right,
     }
 }
 
