@@ -15,7 +15,7 @@ L1
 L99
 R14
 L82
-""") == 3);
+""") == 6);
     }
 
     public int Solve(string input)
@@ -27,13 +27,18 @@ L82
         foreach (var row in rows)
         {
             var n = int.Parse(row[1..]);
+            var multiplier = n / 100;
+            result += multiplier;
             if (row[0] == 'L')
                 n = -n;
-            var tmp = (value + n + range) % range;
-            value = tmp;
 
-            if (value == 0)
+            var tmp = ((value + n) % range + range) % range;
+            if (tmp == 0)
                 result++;
+            else if (value != 0 && (row[0] == 'L' && value < tmp || row[0] == 'R' && value > tmp))
+                result++;
+
+            value = tmp;
         }
         return result;
     }
