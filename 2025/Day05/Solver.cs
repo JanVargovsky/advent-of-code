@@ -16,23 +16,33 @@ internal class Solver
 11
 17
 32
-""") == 3);
+""") == 14);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
         var segments = input.Split(Environment.NewLine + Environment.NewLine);
         var ranges = segments[0]
             .Split(Environment.NewLine)
             .Select(ParseRange)
             .OrderBy(t => t.From)
-            .ToArray();
+            .ToList();
 
-        var ids = segments[1]
-            .Split(Environment.NewLine)
-            .Select(long.Parse);
+        var i = 0;
+        while (i < ranges.Count - 1)
+        {
+            if (ranges[i].IsInRange(ranges[i + 1].From) || ranges[i + 1].IsInRange(ranges[i].To))
+            {
+                ranges[i] = new Range(
+                    Math.Min(ranges[i].From, ranges[i + 1].From),
+                    Math.Max(ranges[i].To, ranges[i + 1].To));
+                ranges.RemoveAt(i + 1);
+            }
+            else
+                i++;
+        }
 
-        var result = ids.Count(id => ranges.Any(r => r.IsInRange(id)));
+        var result = ranges.Sum(t => t.Count);
 
         return result;
 
@@ -46,5 +56,6 @@ internal class Solver
     record class Range(long From, long To)
     {
         public bool IsInRange(long x) => x >= From && x <= To;
+        public long Count => To - From + 1;
     }
 }
