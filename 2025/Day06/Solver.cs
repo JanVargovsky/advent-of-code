@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AdventOfCode.Year2025.Day06;
 
 internal class Solver
@@ -9,33 +11,64 @@ internal class Solver
  45 64  387 23
   6 98  215 314
 *   +   *   +
-""") == 4277556);
+""") == 3263827);
     }
 
     public long Solve(string input)
     {
-        var rows = input.Split(Environment.NewLine).Select(t => t.Split(' ', StringSplitOptions.RemoveEmptyEntries)).ToArray();
-        var numbers = rows[..^1].Select(t => t.Select(long.Parse).ToArray()).ToArray();
-        var operators = rows[^1].ToArray();
+        var rows = input.Split(Environment.NewLine);
+        var numbers = rows[..^1].ToArray();
+        var operators = rows[^1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var columns = rows.Max(t => t.Length);
+        var c = 0;
+        var op = 'x';
+        var values = new List<long>();
+        var problems = new List<Problem>();
 
-        var total = 0L;
-        for (int c = 0; c < operators.Length; c++)
+        while (c < columns)
         {
-            var op = operators[c];
-            var result = op == "*" ? 1L : 0L;
-
-            for (int r = 0; r < numbers.Length; r++)
+            var column = GetColumn(c);
+            if (column[^1] != ' ')
             {
-                var value = numbers[r][c];
-                if (op == "+")
-                    result += value;
-                else
-                    result *= value;
+                if (values.Count > 0)
+                    problems.Add(new Problem(op, values));
+                op = column[^1];
+                values = [];
             }
 
+            var value = column[..^1].Trim();
+            if (value != string.Empty)
+                values.Add(long.Parse(value));
+            c++;
+        }
+        if (values.Count > 0)
+            problems.Add(new Problem(op, values));
+
+        var total = 0L;
+        foreach (var problem in problems)
+        {
+            var result = problem.Operator == '*' ?
+                    problem.Values.Aggregate(1L, (acc, value) => acc *= value) :
+                    problem.Values.Sum();
             total += result;
         }
 
         return total;
+
+        string GetColumn(int c)
+        {
+            StringBuilder sb = new();
+            foreach (var row in rows)
+            {
+                if (c < row.Length)
+                    sb.Append(row[c]);
+                else
+                    sb.Append(' ');
+            }
+
+            return sb.ToString();
+        }
     }
+
+    record Problem(char Operator, List<long> Values);
 }
