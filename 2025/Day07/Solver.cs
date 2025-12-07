@@ -21,32 +21,36 @@ internal class Solver
 ...............
 .^.^.^.^.^...^.
 ...............
-""") == 21);
+""") == 40);
     }
 
     public long Solve(string input)
     {
         var rows = input.Split(Environment.NewLine);
-        var beams = new HashSet<int>();
-        beams.Add(rows[0].IndexOf('S'));
-        var result = 0L;
+        var beams = new Dictionary<int, long>();
+        beams[rows[0].IndexOf('S')] = 1;
 
         foreach (var row in rows[1..])
         {
-            var newBeams = new HashSet<int>();
-            foreach (var i in beams)
+            var newBeams = new Dictionary<int, long>();
+            foreach (var (i, count) in beams)
             {
                 if (row[i] == '.')
-                    newBeams.Add(i);
+                    Add(newBeams, i, count);
                 else if (row[i] == '^')
                 {
-                    newBeams.Add(i - 1);
-                    newBeams.Add(i + 1);
-                    result++;
+                    Add(newBeams, i - 1, count);
+                    Add(newBeams, i + 1, count);
                 }
             }
             beams = newBeams;
         }
-        return result;
+        return beams.Values.Sum();
+
+        void Add(Dictionary<int, long> dic, int index, long value)
+        {
+            _ = dic.TryGetValue(index, out var existing);
+            dic[index] = existing + value;
+        }
     }
 }
