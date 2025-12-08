@@ -27,10 +27,10 @@ internal class Solver
 862,61,35
 984,92,344
 425,690,689
-""", 10) == 40);
+""") == 25272);
     }
 
-    public long Solve(string input, int maxIntersects = 1000)
+    public long Solve(string input)
     {
         var boxes = input.Split(Environment.NewLine)
             .Select(r => r.Split(',').Select(int.Parse).ToArray())
@@ -38,8 +38,7 @@ internal class Solver
             .ToArray();
         var box2circuit = boxes.ToDictionary(t => t, t => new HashSet<Box>() { t });
         var connections = GetAllConnections(boxes)
-            .OrderBy(t => t.Distance)
-            .Take(maxIntersects);
+            .OrderBy(t => t.Distance);
 
         foreach (var (a, b, distance) in connections)
         {
@@ -52,14 +51,14 @@ internal class Solver
 
             foreach (var item in newC)
                 box2circuit[item] = newC;
+
+            if (box2circuit.Values.Distinct().Count() == 1)
+            {
+                return (long)a.Position[0] * b.Position[0];
+            }
         }
 
-        var result = box2circuit.Values
-            .Distinct()
-            .OrderByDescending(t => t.Count)
-            .Take(3)
-            .Aggregate(1L, (acc, item) => acc * item.Count);
-        return result;
+        throw new ItWontHappenException();
     }
 
     private IEnumerable<(Box, Box, double Distance)> GetAllConnections(IList<Box> items)
